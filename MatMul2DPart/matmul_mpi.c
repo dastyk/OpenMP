@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 			{
 				if(x*y != 0)
 				{
-					dest = y*cy + x;
+					dest = y*py + x;
 #ifdef DEBUG
 					printf("Sending %d colums and %d rows to node %d", cx,cy,dest);
 #endif
