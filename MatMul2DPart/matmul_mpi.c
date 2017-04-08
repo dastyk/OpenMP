@@ -72,6 +72,10 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 		data += offset*stride;
 		MPI_Recv(data, cols, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, &status);		
 	}
+	#ifdef DEBUG
+		printf("Data received\n"); 
+		print_matrix(data, cols, rows, stride); 
+	#endif
 }
 
 
@@ -126,7 +130,7 @@ int main(int argc, char **argv)
 		free(a);
 		free(b);
 	}
-	else
+	else if(myrank == 1)
 	{
 		double* a = malloc(cx*cy*sizeof(double));
 		double* b = malloc(cx*cy*sizeof(double));
