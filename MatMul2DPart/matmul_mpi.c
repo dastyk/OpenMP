@@ -109,8 +109,7 @@ int main(int argc, char **argv)
 				{
 					dest = y*py + x;
 #ifdef DEBUG
-					printf("Sending %d colums and %d rows to node %d\n", cx,cy,dest);
-					print_matrix();
+					printf("Sending %d colums and %d rows to node %d\n", cx,cy,dest);				
 #endif
 					
 					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
