@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 					dest = y*py + x;
 #ifdef DEBUG
 					printf("Sending %d colums and %d rows to node %d\n", cx,cy,dest);
-					printf("...\n", myrank);
+					printf("...\n");
 					for (i = cx*x; i < cx*x + 2; i++) 
 					{
 						for (j = cy*y; j < cy*y + 2; j++)
@@ -119,6 +119,7 @@ int main(int argc, char **argv)
 #endif
 					
 					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
+					sleep(2);
 				}
 			}
 		}
