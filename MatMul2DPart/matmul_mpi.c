@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 	else if(myrank == 1)
 	{
 		x = myrank % px;
-		y = myrank % py;
+		y = (myrank - x)/ px
 		
 		
 		double* a = malloc(cx*cy*sizeof(double));
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 		
 		// Send local A one left
 		dest =  y*py + ((x - 1)%px);
-		//SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
+		SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
 		
 		
 		free(a);
