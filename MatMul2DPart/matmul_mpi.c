@@ -90,9 +90,13 @@ int main(int argc, char **argv)
 	int x,y;
 	int myrank, numNodes;
 	int dest, src, offset;
-	MPI_Init(&argc, &argv);
+	
+	
 	double start_time, end_time;
 	int px, py, cx, cy;
+	
+	MPI_Init(&argc, &argv);
+	
 	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	px = numNodes / 2;
@@ -122,6 +126,7 @@ int main(int argc, char **argv)
 				if(dest != 0)
 				{				
 					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
+					SendBlock(b, x*cx, y*cy, cy, cy, SIZE, dest, FROM_MASTER);
 					sleep(1);
 				}
 			}
@@ -140,7 +145,7 @@ int main(int argc, char **argv)
 		
 		
 		RecvBlock(a, 0, 0,cx,cy, cx, 0, FROM_MASTER);
-		
+		RecvBlock(b, 0, 0,cy,cx, cy, 0, FROM_MASTER);
 		
 		free(a);
 		free(b);
