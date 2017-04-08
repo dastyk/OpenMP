@@ -54,7 +54,7 @@ void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int d
 	#endif
 	for(offset = 0; offset < rows; offset++)
 	{
-		data += offset*stride;
+		data += stride;
 		MPI_Send(data, cols, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);		
 	}	
 }
@@ -72,7 +72,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 	
 	for(offset = 0; offset < rows; offset++)
 	{
-		data += offset*stride;
+		data += stride;
 		MPI_Recv(data, cols, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, &status);		
 	}
 	#ifdef DEBUG
