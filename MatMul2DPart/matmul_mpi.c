@@ -17,81 +17,56 @@
 
 MPI_Status status;
 
-static double a[SIZE][SIZE];
-static double b[SIZE][SIZE];
-static double c[SIZE][SIZE];
 
 static void
-init_matrix(void)
+init_matrix(float* mat, int size)
 {
-    int i, j;
+    int x,y;
 
-    for (i = 0; i < SIZE; i++)
-        for (j = 0; j < SIZE; j++) {
-            /* Simple initialization, which enables us to easy check
-             * the correct answer. Given SIZE size of the matrices, then
-             * the output should be
-             *     SIZE ... 2*SIZE ...
-             *     ...
-             *     2*SIZE ... 4*SIZE ...
-             *     ...
-             */
-            a[i][j] = 1.0;
-            if (i >= SIZE/2) a[i][j] = 2.0;
-            b[i][j] = 1.0;
-            if (j >= SIZE/2) b[i][j] = 2.0;
+    for (y = 0; y < size; y++)
+        for (x = 0; x < size; x++) {
+
+            mat[y*size + x] = 1.0;
+            if (x >= size/2) mat[y*size + x] = 2.0;
+
         }
 }
 
 static void
-print_matrix(void)
+print_matrix(float* mat, int col, int row, int stride)
 {
-    int i, j;
+    int x,y;
 
-    for (i = 0; i < SIZE; i++) {
-        for (j = 0; j < SIZE; j++)
-            printf(" %7.2f", a[i][j]);
+    for (y = 0; y < row; y++){
+        for (x = 0; x < col; x++) 
+            printf(" %7.2f", mat[y*stride + x]);
         printf("\n");
     }
 }
 
-void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
+void SendBlock(float* data, int x, int y, int cols, int rows, int stride, int dest, int tag)
 {
-	int i;
 	int offset;
-	#ifdef DEBUG
-		printf("x=%d, y=%d, cols=%d, rows=%d\n", x,y,cols,rows);
+	data += stride*y+x;
+		#ifdef DEBUG
+		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, dest, x,y); 
+		print_matrix(data, cols, rows, stride); 
 	#endif
 	for(offset = 0; offset < rows; offset++)
 	{
-		printf("s: ");
-		for(i = 0; i < cols; i++)
-		{
-			printf("%7.2f ", a[x + i][y + offset]);
-		}
-		printf("\n");
-		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, tag, MPI_COMM_WORLD);
-		sleep(1);
+		data += offset*stride;
+		//MPI_Send(data, cols, MPI_INT, dest, tag, MPI_COMM_WORLD);		
 	}	
 }
 
-void RecvBlock(void* data, int x, int y, int cols, int rows, int src, int tag)
+void RecvBlock(float* data, int x, int y, int cols, int rows, int src, int tag)
 {
-	int i;
 	int offset;
 	#ifdef DEBUG
-		printf("x=%d, y=%d, cols=%d, rows=%d\n", x,y,cols,rows);
+		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, dest 
 	#endif
-	for(offset = 0; offset < rows; offset++)
-	{
-		MPI_Recv(&a[x][y + offset], cols, MPI_INT, src, tag, MPI_COMM_WORLD, &status);
-		printf("r: ");
-		for(i = 0; i < cols; i++)
-		{
-			printf("%7.2f ", a[x + i][y + offset]);
-		}
-		printf("\n");
-	}	
+	
+	
 }
 
 
@@ -110,54 +85,34 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	px = numNodes / 2;
 	py = 2;
-	cx = SIZE / py;
-	cy = SIZE / px;
+	cx = SIZE / px;
+	cy = SIZE / py;
 	
 	if(myrank == 0) // Master
 	{
-		printf("SIZE = %d, Number of columns: %d, Number of rows: %d\n", SIZE, px, py);
-		init_matrix();
-		start_time = MPI_Wtime();
+		float* a = malloc(SIZE*SIZE*sizeof(float));
+		init_matrix(a, SIZE);
+		float* b = malloc(SIZE*SIZE*sizeof(float));
+		init_matrix(b, SIZE);
 		
-#ifdef DEBUG
-printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
-	print_matrix();
-#endif
+		#ifdef DEBUG
+			printf("A: \n");
+			print_matrix(a, SIZE, SIZE, SIZE);
+			printf("B: \n");
+			print_matrix(b, SIZE, SIZE, SIZE);
+		#endif
 		for(y = 0; y < py; y++)
 		{
-			printf("y=%d, ", y);
 			for(x = 0; x < px; x++)
 			{
-				printf("x=%d\n", x);
-				if(y*py + x != 0)
+				dest = y*py + x;
+				if(dest != 0)
 				{
-					dest = y*py + x;
-#ifdef DEBUG
-					printf("Sending %d colums and %d rows to node %d\n", cx,cy,dest);				
-#endif
 					
-					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
-#ifdef DEBUG
-					sleep(2);
-#endif
+					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
 				}
 			}
 		}
-		
-		
-		
-	}
-	else if(myrank == 1)
-	{
-		int a_l[cx][cy];
-		RecvBlock(a, 0, 0, cx, cy, 0, FROM_MASTER);
-#ifdef DEBUG
-					printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
-				//	printf("Node %d recvied...\n", myrank);
-				//	print_matrix();
-#endif		
-		
-		
 		
 	}
 	
