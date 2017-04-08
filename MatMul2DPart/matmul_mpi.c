@@ -50,7 +50,7 @@ print_matrix(void)
 
     for (i = 0; i < SIZE; i++) {
         for (j = 0; j < SIZE; j++)
-            printf(" %7.2f", c[i][j]);
+            printf(" %7.2f", a[i][j]);
         printf("\n");
     }
 }
