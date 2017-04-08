@@ -177,8 +177,8 @@ int main(int argc, char **argv)
 		double* b = malloc(cx*SIZE*sizeof(double));
 		double* c = malloc(cx*cy*sizeof(double));
 		
-		RecvBlock(a, 0, 0,SIZE,cy, SIZE, FROM_MASTER);
-		RecvBlock(b, 0, 0,cx,SIZE, cx, FROM_MASTER);
+		RecvBlock(a, 0, 0,SIZE,cy, SIZE, 0, FROM_MASTER);
+		RecvBlock(b, 0, 0,cx,SIZE, cx, 0, FROM_MASTER);
 
 		for(y = 0; y < cy; y++)
 		{
