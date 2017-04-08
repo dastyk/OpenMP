@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 		init_matrix(b, SIZE);
 		
 		#ifdef DEBUG
-			printf("Num Nodes: %d\n", numNoes);
+			printf("Num Nodes: %d\n", numNodes);
 			printf("A: \n");
 			print_matrix(a, SIZE, SIZE, SIZE);
 			printf("B: \n");
