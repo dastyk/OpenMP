@@ -151,8 +151,12 @@ int main(int argc, char **argv)
 		RecvBlock(b, 0, 0,cx,cy, cy, 0, FROM_MASTER);
 		
 		// Send local A one left
-		dest =  y*py + ((x - 1)%px);
+		dest =  y + ((x - 1)%px);
 		SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
+		
+		// Send local B one up
+		dest = ((y+1)%py) + x;
+		SendBlock(b, 0,0, cx, cy, cx, dest, FROM_WORKER);
 		
 		
 		free(a);
