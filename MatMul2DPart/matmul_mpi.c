@@ -71,6 +71,7 @@ void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
 		}
 		printf("\n");
 		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, tag, MPI_COMM_WORLD);
+		sleep(1);
 	}	
 }
 
