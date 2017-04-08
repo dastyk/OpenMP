@@ -11,6 +11,7 @@
 #define SIZE 8	/* assumption: SIZE a multiple of number of nodes */
         /* SIZE should be 1024 in our measurements in the assignment */
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
+#define BLOCKS 8
 #define FROM_MASTER 1	/* setting a message type */
 #define FROM_WORKER 2	/* setting a message type */
 #define DEBUG	1	/* 1 = debug on, 0 = debug off */
@@ -50,7 +51,7 @@ void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int d
 	data += stride*y+x;
 		#ifdef DEBUG
 		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, dest, x,y); 
-		print_matrix(data, cols, rows, stride); 
+	//	print_matrix(data, cols, rows, stride); 
 	#endif
 	for(offset = 0; offset < rows; offset++)
 	{
@@ -77,7 +78,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 	}
 	#ifdef DEBUG
 		printf("Data received\n"); 
-		print_matrix(temp, cols, rows, stride); 
+	//	print_matrix(temp, cols, rows, stride); 
 	#endif
 }
 
@@ -114,6 +115,7 @@ int main(int argc, char **argv)
 		init_matrix(a, SIZE);
 		double* b = malloc(SIZE*SIZE*sizeof(double));
 		init_matrix(b, SIZE);
+		double* c = malloc(SIZE*SIZE*sizeof(double));
 		
 		#ifdef DEBUG
 			printf("Num Nodes: %d\n", numNodes);
@@ -129,42 +131,75 @@ int main(int argc, char **argv)
 				dest = y*px + x;
 				if(dest != 0)
 				{				
-					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
-					sleep(1);
-					SendBlock(b, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
+					SendBlock(a, 0, y*cy, SIZE, cy, SIZE, dest, FROM_MASTER);
+					SendBlock(b, x*cx, 0, cx, SIZE, SIZE, dest, FROM_MASTER);
 				}
 			}
 		}
 		
+		
+		for(y = 0; y < cy; y++)
+		{
+			for(x = 0; x < cx; x++)
+			{
+				double sum = 0.0f;
+				for(i = 0; i < SIZE; i++)
+				{
+					sum += a[y*SIZE + i] * b[i*SIZE + x];
+				}
+				c[y*SIZE + x] = sum;
+			}
+		}
+		
+		for(y = 0; y < py; y++)
+		{
+			for(x = 0; x < px; x++)
+			{
+				src = y*px + x;
+				if(src != 0)
+				{				
+					RecvBlock(c, x*cx, y*cy, cx, cy, SIZE, src, FROM_WORKER);
+				}
+			}
+		}
+		
+		
+		#ifdef DEBUG
+		print_matrix(c, SIZE, SIZE, SIZE);
+		#endif
 	
 		free(a);
 		free(b);
 	}
 	else if(myrank == 1)
 	{
-		x = mod(myrank, px);
-		y = (myrank - x)/ px;
+		double* a = malloc(SIZE*cy*sizeof(double));
+		double* b = malloc(cx*SIZE*sizeof(double));
+		double* c = malloc(cx*cy*sizeof(double));
+		
+		RecvBlock(a, 0, 0,SIZE,cy, SIZE, FROM_MASTER);
+		RecvBlock(b, 0, 0,cx,SIZE, cx, FROM_MASTER);
+
+		for(y = 0; y < cy; y++)
+		{
+			for(x = 0; x < cx; x++)
+			{
+				double sum = 0.0f;
+				for(i = 0; i < SIZE; i++)
+				{
+					sum += a[y*SIZE + i] * b[i*cx + x];
+				}
+				c[y*cx + x] = sum;
+			}
+		}
 		
 		
-		double* a = malloc(cx*cy*sizeof(double));
-		double* b = malloc(cx*cy*sizeof(double));
-		
-		
-		RecvBlock(a, 0, 0,cx,cy, cx, 0, FROM_MASTER);
-		sleep(1);
-		RecvBlock(b, 0, 0,cx,cy, cy, 0, FROM_MASTER);
-		
-		// Send local A one left
-		dest =  y*px + ((x - 1)%px);
-		SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
-		
-		// Send local B one up
-		dest = mod(y-1, py)*px + x;
-		SendBlock(b, 0,0, cx, cy, cx, dest, FROM_WORKER);
+		SendBlock(c, 0 ,0, cx, cy, cx, 0, FROM_WORKER);
 		
 		
 		free(a);
 		free(b);
+		free(c);
 	}
 	
 	
