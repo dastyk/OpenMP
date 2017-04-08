@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-#define SIZE 2	/* assumption: SIZE a multiple of number of nodes */
+#define SIZE 8	/* assumption: SIZE a multiple of number of nodes */
         /* SIZE should be 1024 in our measurements in the assignment */
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
 #define FROM_MASTER 1	/* setting a message type */
@@ -76,7 +76,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 		data += stride;		
 	}
 	#ifdef DEBUG
-		printf("Data received\n"); 
+	//	printf("Data received\n"); 
 	//	print_matrix(temp, cols, rows, stride); 
 	#endif
 }
@@ -103,7 +103,12 @@ int main(int argc, char **argv)
 	
 	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-	px = 2;
+	if(numNodes == 1)
+		px = 1;
+	else if(numNodes == 2}
+		px = 1;
+	else
+		px = 2;
 	py = numNodes  / px;
 	cx = SIZE / px;
 	cy = SIZE / py;
