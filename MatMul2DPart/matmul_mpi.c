@@ -108,7 +108,7 @@ printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
 			for(x = 0; x < px; x++)
 			{
 				printf("x=%d\n", x);
-				if(x*y != 0)
+				if(y*py + x != 0)
 				{
 					dest = y*py + x;
 #ifdef DEBUG
