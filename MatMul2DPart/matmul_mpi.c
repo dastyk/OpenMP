@@ -155,7 +155,7 @@ int main(int argc, char **argv)
 		SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
 		
 		// Send local B one up
-		dest = ((y+1)%py) + x;
+		dest = ((y-1)%py) + x;
 		SendBlock(b, 0,0, cx, cy, cx, dest, FROM_WORKER);
 		
 		
