@@ -119,7 +119,9 @@ int main(int argc, char **argv)
 #endif
 					
 					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
+#ifdef DEBUG
 					sleep(2);
+#endif
 				}
 			}
 		}
