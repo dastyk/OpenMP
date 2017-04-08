@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 	else if(myrank == 1)
 	{
 		x = myrank % px;
-		y = (myrank - x)/ px
+		y = (myrank - x)/ px;
 		
 		
 		double* a = malloc(cx*cy*sizeof(double));
