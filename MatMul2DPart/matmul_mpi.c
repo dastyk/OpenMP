@@ -8,10 +8,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-#define SIZE 8	/* assumption: SIZE a multiple of number of nodes */
+#define SIZE 4	/* assumption: SIZE a multiple of number of nodes */
         /* SIZE should be 1024 in our measurements in the assignment */
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
-#define BLOCKS 8
 #define FROM_MASTER 1	/* setting a message type */
 #define FROM_WORKER 2	/* setting a message type */
 #define DEBUG	1	/* 1 = debug on, 0 = debug off */
@@ -151,6 +150,9 @@ int main(int argc, char **argv)
 			}
 		}
 		
+		#ifdef DEBUG
+		printf("Node %d done\n", myrank);
+		#endif
 		for(y = 0; y < py; y++)
 		{
 			for(x = 0; x < px; x++)
@@ -171,7 +173,7 @@ int main(int argc, char **argv)
 		free(a);
 		free(b);
 	}
-	else if(myrank == 1)
+	else
 	{
 		double* a = malloc(SIZE*cy*sizeof(double));
 		double* b = malloc(cx*SIZE*sizeof(double));
@@ -192,8 +194,9 @@ int main(int argc, char **argv)
 				c[y*cx + x] = sum;
 			}
 		}
-		
-		
+		#ifdef DEBUG
+		printf("Node %d done\n", myrank);
+		#endif
 		SendBlock(c, 0 ,0, cx, cy, cx, 0, FROM_WORKER);
 		
 		
