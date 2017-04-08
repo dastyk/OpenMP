@@ -89,8 +89,8 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	px = numNodes / 2;
 	py = 2;
-	cx = SIZE / px;
-	cy = SIZE / py;
+	cx = SIZE / py;
+	cy = SIZE / px;
 	
 	if(myrank == 0) // Master
 	{
