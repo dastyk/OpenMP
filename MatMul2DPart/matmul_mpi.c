@@ -64,7 +64,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 	int offset;
 	data += stride*y+x;
 	#ifdef DEBUG
-		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
+		printf("Receiving %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
 	#endif
 	
 	for(offset = 0; offset < rows; offset++)
@@ -112,9 +112,9 @@ int main(int argc, char **argv)
 			{
 				dest = y*py + x;
 				if(dest != 0)
-				{
-					
+				{				
 					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
+					sleep(1);
 				}
 			}
 		}
