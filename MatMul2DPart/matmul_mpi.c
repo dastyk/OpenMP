@@ -19,7 +19,7 @@ MPI_Status status;
 
 
 static void
-init_matrix(float* mat, int size)
+init_matrix(double* mat, int size)
 {
     int x,y;
 
@@ -33,7 +33,7 @@ init_matrix(float* mat, int size)
 }
 
 static void
-print_matrix(float* mat, int col, int row, int stride)
+print_matrix(double* mat, int col, int row, int stride)
 {
     int x,y;
 
@@ -44,7 +44,7 @@ print_matrix(float* mat, int col, int row, int stride)
     }
 }
 
-void SendBlock(float* data, int x, int y, int cols, int rows, int stride, int dest, int tag)
+void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int dest, int tag)
 {
 	int offset;
 	data += stride*y+x;
@@ -55,18 +55,23 @@ void SendBlock(float* data, int x, int y, int cols, int rows, int stride, int de
 	for(offset = 0; offset < rows; offset++)
 	{
 		data += offset*stride;
-		//MPI_Send(data, cols, MPI_INT, dest, tag, MPI_COMM_WORLD);		
+		MPI_Send(data, cols, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);		
 	}	
 }
 
-void RecvBlock(float* data, int x, int y, int cols, int rows, int src, int tag)
+void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int src, int tag)
 {
 	int offset;
+	data += stride*y+x;
 	#ifdef DEBUG
 		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
 	#endif
 	
-	
+	for(offset = 0; offset < rows; offset++)
+	{
+		data += offset*stride;
+		MPI_Recv(data, cols, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, &status);		
+	}
 }
 
 
@@ -90,9 +95,9 @@ int main(int argc, char **argv)
 	
 	if(myrank == 0) // Master
 	{
-		float* a = malloc(SIZE*SIZE*sizeof(float));
+		double* a = malloc(SIZE*SIZE*sizeof(double));
 		init_matrix(a, SIZE);
-		float* b = malloc(SIZE*SIZE*sizeof(float));
+		double* b = malloc(SIZE*SIZE*sizeof(double));
 		init_matrix(b, SIZE);
 		
 		#ifdef DEBUG
@@ -114,8 +119,24 @@ int main(int argc, char **argv)
 			}
 		}
 		
+		
+		
+		
+		free(a);
+		free(b);
 	}
-	
+	else
+	{
+		double* a = malloc(cx*cy*sizeof(double));
+		double* b = malloc(cx*cy*sizeof(double));
+		
+		
+		RecvBlock(a, 0, 0,cx,cy, cx, 0, FROM_MASTER);
+		
+		
+		free(a);
+		free(b);
+	}
 	
 	
 	
