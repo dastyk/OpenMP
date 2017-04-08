@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 	double start_time, end_time;
 	int px, py, cx, cy;
 	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
-	MPI_Comm_Rank(MPI_COMM_WORLD, &myrank);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	px = numNodes / 2;
 	py = 2;
 	cx = SIZE / px;
