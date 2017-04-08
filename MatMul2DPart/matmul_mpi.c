@@ -13,7 +13,7 @@
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
 #define FROM_MASTER 1	/* setting a message type */
 #define FROM_WORKER 2	/* setting a message type */
-#define DEBUG	0	/* 1 = debug on, 0 = debug off */
+//#define DEBUG	
 
 MPI_Status status;
 
