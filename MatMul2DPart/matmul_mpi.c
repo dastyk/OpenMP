@@ -63,7 +63,7 @@ void RecvBlock(float* data, int x, int y, int cols, int rows, int src, int tag)
 {
 	int offset;
 	#ifdef DEBUG
-		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, dest 
+		printf("Sending %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
 	#endif
 	
 	
