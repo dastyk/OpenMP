@@ -82,7 +82,11 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 }
 
 
-
+int mod(int a, int b)
+{
+    int r = a % b;
+    return r < 0 ? r + b : r;
+}
 
 int main(int argc, char **argv)
 {
@@ -138,7 +142,7 @@ int main(int argc, char **argv)
 	}
 	else if(myrank == 1)
 	{
-		x = myrank % px;
+		x = mod(myrank, px);
 		y = (myrank - x)/ px;
 		
 		
@@ -155,7 +159,7 @@ int main(int argc, char **argv)
 		SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
 		
 		// Send local B one up
-		dest = ((y-1)%py)*px + x;
+		dest = mod(y-1, py)*px + x;
 		SendBlock(b, 0,0, cx, cy, cx, dest, FROM_WORKER);
 		
 		
