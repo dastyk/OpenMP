@@ -66,7 +66,7 @@ void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
 	{
 		for(i = 0; i < cols; i++)
 		{
-			printf("%7.2f ", a[x + i][y + offset]);
+			printf("s: %7.2f ", a[x + i][y + offset]);
 		}
 		printf("\n");
 		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, tag, MPI_COMM_WORLD);
@@ -82,6 +82,10 @@ void RecvBlock(void* data, int x, int y, int cols, int rows, int src, int tag)
 	for(offset = 0; offset < rows; offset++)
 	{
 		MPI_Recv(&a[x][y + offset], cols, MPI_INT, src, tag, MPI_COMM_WORLD, &status);
+		for(i = 0; i < cols; i++)
+		{
+			printf("r: %7.2f ", a[x + i][y + offset]);
+		}
 	}	
 }
 
@@ -138,7 +142,7 @@ printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
 		
 		
 	}
-	else
+	else if(myrank == 1)
 	{
 		int a_l[cx][cy];
 		RecvBlock(a, 0, 0, cx, cy, 0, FROM_MASTER);
