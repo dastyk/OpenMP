@@ -99,10 +99,10 @@ int main(int argc, char **argv)
 	
 	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-	px = numNodes / 2;
-	py = 2;
-	cx = SIZE / py;
-	cy = SIZE / px;
+	px = 2;
+	py = numNodes  / px;
+	cx = SIZE / px;
+	cy = SIZE / py;
 	
 	if(myrank == 0) // Master
 	{
@@ -126,9 +126,7 @@ int main(int argc, char **argv)
 				if(dest != 0)
 				{				
 					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
-					sleep(1);
-					SendBlock(b, x*cx, y*cy, cy, cx, SIZE, dest, FROM_MASTER);
-					sleep(1);
+					//SendBlock(b, x*cx, y*cy, cy, cx, SIZE, dest, FROM_MASTER);
 				}
 			}
 		}
@@ -139,13 +137,21 @@ int main(int argc, char **argv)
 	}
 	else if(myrank == 1)
 	{
+		x = myrank % px;
+		y = myrank % py;
+		
+		
 		double* a = malloc(cx*cy*sizeof(double));
 		double* b = malloc(cx*cy*sizeof(double));
 		
 		
 		RecvBlock(a, 0, 0,cx,cy, cx, 0, FROM_MASTER);
-		sleep(1);
-		RecvBlock(b, 0, 0,cy,cx, cy, 0, FROM_MASTER);
+		//RecvBlock(b, 0, 0,cy,cx, cy, 0, FROM_MASTER);
+		
+		// Send local A one left
+		dest =  y*py + ((x - 1)%px);
+		//SendBlock(a, 0,0, cx, cy, cx, dest, FROM_WORKER);
+		
 		
 		free(a);
 		free(b);
