@@ -62,6 +62,9 @@ void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int d
 void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int src, int tag)
 {
 	int offset;
+	#ifdef DEBUG
+	double* temp = data;
+	#endif
 	data += stride*y+x;
 	#ifdef DEBUG
 		printf("Receiving %d colums and %d rows from node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
@@ -74,7 +77,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 	}
 	#ifdef DEBUG
 		printf("Data received\n"); 
-		print_matrix(data, cols, rows, stride); 
+		print_matrix(temp, cols, rows, stride); 
 	#endif
 }
 
