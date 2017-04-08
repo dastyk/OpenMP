@@ -99,6 +99,7 @@ int main(int argc, char **argv)
 		start_time = MPI_Wtime();
 		
 #ifdef DEBUG
+printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
 	print_matrix();
 #endif
 		for(y = 0; y < py; y++)
@@ -128,6 +129,7 @@ int main(int argc, char **argv)
 		int a_l[cx][cy];
 		RecvBlock(a, 0, 0, cx, cy, 0, FROM_MASTER);
 #ifdef DEBUG
+					printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
 					printf("Node %d recvied...\n", myrank);
 					print_matrix();
 #endif		
