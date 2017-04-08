@@ -57,9 +57,15 @@ print_matrix(void)
 
 void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
 {
+	int i;
 	int offset;
 	for(offset = 0; offset < rows; offset++)
 	{
+		for(i = 0; i < cols; i++)
+		{
+			printf("%7.2f ", a[x + i][y + offset]);
+		}
+		printf("\n");
 		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, tag, MPI_COMM_WORLD);
 	}	
 }
