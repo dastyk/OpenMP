@@ -64,7 +64,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 	int offset;
 	data += stride*y+x;
 	#ifdef DEBUG
-		printf("Receiving %d colums and %d rows to node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
+		printf("Receiving %d colums and %d rows from node %d, with offsets %d, %d\n", cols, rows, src, x,y); 
 	#endif
 	
 	for(offset = 0; offset < rows; offset++)
@@ -101,6 +101,7 @@ int main(int argc, char **argv)
 		init_matrix(b, SIZE);
 		
 		#ifdef DEBUG
+			printf("Num Nodes: %d\n", numNoes);
 			printf("A: \n");
 			print_matrix(a, SIZE, SIZE, SIZE);
 			printf("B: \n");
