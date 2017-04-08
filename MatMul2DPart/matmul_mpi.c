@@ -8,12 +8,12 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-#define SIZE 8	/* assumption: SIZE a multiple of number of nodes */
+#define SIZE 1024	/* assumption: SIZE a multiple of number of nodes */
         /* SIZE should be 1024 in our measurements in the assignment */
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
 #define FROM_MASTER 1	/* setting a message type */
 #define FROM_WORKER 2	/* setting a message type */
-#define DEBUG	1	/* 1 = debug on, 0 = debug off */
+#define DEBUG	0	/* 1 = debug on, 0 = debug off */
 
 MPI_Status status;
 
