@@ -109,6 +109,13 @@ int main(int argc, char **argv)
 					dest = y*py + x;
 #ifdef DEBUG
 					printf("Sending %d colums and %d rows to node %d\n", cx,cy,dest);
+					printf("...\n", myrank);
+					for (i = cx*x; i < cx*x + 2; i++) 
+					{
+						for (j = cy*y; j < cy*y + 2; j++)
+							printf(" %7.2f", a[i][j]);
+						printf("\n");
+					}
 #endif
 					
 					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
@@ -125,10 +132,10 @@ int main(int argc, char **argv)
 		RecvBlock(a, 0, 0, cx, cy, 0, FROM_MASTER);
 #ifdef DEBUG
 					printf("Node %d recvied...\n", myrank);
-					for (i = 0; i < cx; i++) 
+					for (i = 0; i < 2; i++) 
 					{
-						for (j = 0; j < cy; j++)
-							printf(" %7.2f", c[i][j]);
+						for (j = 0; j < 2; j++)
+							printf(" %7.2f", a[i][j]);
 						printf("\n");
 					}
 #endif		
