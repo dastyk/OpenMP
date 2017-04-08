@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-#define SIZE 4	/* assumption: SIZE a multiple of number of nodes */
+#define SIZE 2	/* assumption: SIZE a multiple of number of nodes */
         /* SIZE should be 1024 in our measurements in the assignment */
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
 #define FROM_MASTER 1	/* setting a message type */
@@ -167,6 +167,8 @@ int main(int argc, char **argv)
 		
 		
 		#ifdef DEBUG
+		print_matrix(a, SIZE, SIZE, SIZE);
+		print_matrix(b, SIZE, SIZE, SIZE);
 		print_matrix(c, SIZE, SIZE, SIZE);
 		#endif
 	
