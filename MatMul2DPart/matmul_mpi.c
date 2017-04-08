@@ -168,11 +168,11 @@ int main(int argc, char **argv)
 		
 		
 		#ifdef DEBUG
-		printf("\n"A: \n");
+		printf("\nA: \n");
 		print_matrix(a, SIZE, SIZE, SIZE);
-		printf("\n"B: \n");
+		printf("\nB: \n");
 		print_matrix(b, SIZE, SIZE, SIZE);
-		printf("\n"C: \n");
+		printf("\nC: \n");
 		print_matrix(c, SIZE, SIZE, SIZE);
 		#endif
 	
