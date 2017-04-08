@@ -126,7 +126,8 @@ int main(int argc, char **argv)
 				if(dest != 0)
 				{				
 					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
-					//SendBlock(b, x*cx, y*cy, cy, cx, SIZE, dest, FROM_MASTER);
+					sleep(1);
+					SendBlock(b, x*cx, y*cy, cy, cx, SIZE, dest, FROM_MASTER);
 				}
 			}
 		}
@@ -146,7 +147,8 @@ int main(int argc, char **argv)
 		
 		
 		RecvBlock(a, 0, 0,cx,cy, cx, 0, FROM_MASTER);
-		//RecvBlock(b, 0, 0,cy,cx, cy, 0, FROM_MASTER);
+		sleep(1);
+		RecvBlock(b, 0, 0,cy,cx, cy, 0, FROM_MASTER);
 		
 		// Send local A one left
 		dest =  y*py + ((x - 1)%px);
