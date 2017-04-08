@@ -13,7 +13,7 @@
         /* Hint: use small sizes when testing, e.g., SIZE 8 */
 #define FROM_MASTER 1	/* setting a message type */
 #define FROM_WORKER 2	/* setting a message type */
-#define DEBUG 0		/* 1 = debug on, 0 = debug off */
+#define DEBUG	1	/* 1 = debug on, 0 = debug off */
 
 MPI_Status status;
 
@@ -60,12 +60,25 @@ void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
 	int offset;
 	for(offset = 0; offset < rows; offset++)
 	{
-		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, FROM_MASTER, MPI_COMM_WORLD);
+		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, tag, MPI_COMM_WORLD);
 	}	
 }
 
+void RecvBlock(void* data, int x, int y, int cols, int rows, int src, int tag)
+{
+	int offset;
+	for(offset = 0; offset < rows; offset++)
+	{
+		MPI_Recv(&a[x][y + offset], cols, MPI_INT, src, tag, MPI_COMM_WORLD);
+	}	
+}
+
+
+
+
 int main(int argc, char **argv)
 {
+	int i, j;
 	int x,y;
 	int myrank, numNodes;
 	int dest, src, offset;
@@ -108,6 +121,20 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+		int a_l[cx][cy];
+		RecvBlock(a, 0, 0, cx, cy, 0, FROM_MASTER);
+#ifdef DEBUG
+					printf("Node %d recvied...\n", myrank);
+					for (i = 0; i < cx; i++) 
+					{
+						for (j = 0; j < cy; j++)
+							printf(" %7.2f", c[i][j]);
+						printf("\n");
+					}
+#endif		
+		
+		
+		
 	}
 	
 	
