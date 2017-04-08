@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 				{				
 					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
 					sleep(1);
-					SendBlock(b, x*cx, y*cy, cy, cy, SIZE, dest, FROM_MASTER);
+					SendBlock(b, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
 					sleep(1);
 				}
 			}
