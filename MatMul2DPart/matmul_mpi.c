@@ -69,7 +69,7 @@ void RecvBlock(void* data, int x, int y, int cols, int rows, int src, int tag)
 	int offset;
 	for(offset = 0; offset < rows; offset++)
 	{
-		MPI_Recv(&a[x][y + offset], cols, MPI_INT, src, tag, MPI_COMM_WORLD);
+		MPI_Recv(&a[x][y + offset], cols, MPI_INT, src, tag, MPI_COMM_WORLD, &status);
 	}	
 }
 
