@@ -55,6 +55,14 @@ print_matrix(void)
     }
 }
 
+void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
+{
+	for(offset = 0; offset < rows; offset++)
+	{
+		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, FROM_MASTER, MPI_COMM_WORLD);
+	}	
+}
+
 int main(int argc, char **argv)
 {
 	int x,y;
@@ -77,20 +85,20 @@ int main(int argc, char **argv)
 		start_time = MPI_Wtime();
 		
 		
-		for (dest = 1; dest < numNodes; dest++) 
-		{
-#ifdef DEBUG
-					printf("Sending %d colums and %d rows to node %d", cx,cy,y*py + x);
-#endif
-			
-			
-		}
+
 		for(y = 0; y < py; y++)
 		{
 			for(x = 0; x < px; x++)
 			{
-				
-				MPI_Send(&
+				if(x*y != 0)
+				{
+					dest = y*cy + x;
+#ifdef DEBUG
+					printf("Sending %d colums and %d rows to node %d", cx,cy,dest);
+#endif
+					
+					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
+				}
 			}
 		}
 		
