@@ -57,6 +57,7 @@ print_matrix(void)
 
 void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
 {
+	int offset;
 	for(offset = 0; offset < rows; offset++)
 	{
 		MPI_Send(&a[x][y + offset], cols, MPI_INT, dest, FROM_MASTER, MPI_COMM_WORLD);
