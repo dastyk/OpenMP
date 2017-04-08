@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 	
 	if(myrank == 0) // Master
 	{
-		printf("SIZE = %d, Number of columns: %d, Number of rows: %d", SIZE, px, py);
+		printf("SIZE = %d, Number of columns: %d, Number of rows: %d\n", SIZE, px, py);
 		init_matrix();
 		start_time = MPI_Wtime();
 		
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 				{
 					dest = y*py + x;
 #ifdef DEBUG
-					printf("Sending %d colums and %d rows to node %d", cx,cy,dest);
+					printf("Sending %d colums and %d rows to node %d\n", cx,cy,dest);
 #endif
 					
 					SendBlock(a, cx*x, cy*y, cx, cy, dest, FROM_MASTER);
