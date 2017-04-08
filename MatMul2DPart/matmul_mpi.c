@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 		{
 			for(x = 0; x < px; x++)
 			{
-				dest = y*py + x;
+				dest = y*px + x;
 				if(dest != 0)
 				{				
 					SendBlock(a, x*cx, y*cy, cx, cy, SIZE, dest, FROM_MASTER);
