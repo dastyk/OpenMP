@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 	if(numNodes == 1)
 		px = 1;
-	else if(numNodes == 2}
+	else if(numNodes == 2)
 		px = 1;
 	else
 		px = 2;
