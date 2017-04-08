@@ -123,10 +123,6 @@ int main(int argc, char **argv)
 		
 		#ifdef DEBUG
 			printf("Num Nodes: %d\n", numNodes);
-			printf("A: \n");
-			print_matrix(a, SIZE, SIZE, SIZE);
-			printf("B: \n");
-			print_matrix(b, SIZE, SIZE, SIZE);
 		#endif
 		for(y = 0; y < py; y++)
 		{
@@ -172,8 +168,11 @@ int main(int argc, char **argv)
 		
 		
 		#ifdef DEBUG
+		printf("\n"A: \n");
 		print_matrix(a, SIZE, SIZE, SIZE);
+		printf("\n"B: \n");
 		print_matrix(b, SIZE, SIZE, SIZE);
+		printf("\n"C: \n");
 		print_matrix(c, SIZE, SIZE, SIZE);
 		#endif
 	
