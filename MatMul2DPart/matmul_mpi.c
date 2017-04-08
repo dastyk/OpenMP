@@ -75,6 +75,7 @@ void SendBlock(void* data, int x, int y, int cols, int rows, int dest, int tag)
 
 void RecvBlock(void* data, int x, int y, int cols, int rows, int src, int tag)
 {
+	int i;
 	int offset;
 	#ifdef DEBUG
 		printf("x=%d, y=%d, cols=%d, rows=%d\n", x,y,cols,rows);
