@@ -104,8 +104,10 @@ printf("px=%d py=%d cx=%d cy=%d\n", px,py,cx, cy);
 #endif
 		for(y = 0; y < py; y++)
 		{
+			printf("y=%d, ", y);
 			for(x = 0; x < px; x++)
 			{
+				printf("x=%d\n", x);
 				if(x*y != 0)
 				{
 					dest = y*py + x;
