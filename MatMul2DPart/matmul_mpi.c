@@ -124,6 +124,8 @@ int main(int argc, char **argv)
 		#ifdef DEBUG
 			printf("Num Nodes: %d\n", numNodes);
 		#endif
+		
+		start_time = MPI_Wtime();
 		for(y = 0; y < py; y++)
 		{
 			for(x = 0; x < px; x++)
@@ -166,7 +168,7 @@ int main(int argc, char **argv)
 			}
 		}
 		
-		
+		end_time = MPI_Wtime();
 		#ifdef DEBUG
 		printf("\nA: \n");
 		print_matrix(a, SIZE, SIZE, SIZE);
@@ -175,9 +177,11 @@ int main(int argc, char **argv)
 		printf("\nC: \n");
 		print_matrix(c, SIZE, SIZE, SIZE);
 		#endif
-	
+		printf("\n\nExecution time on %2d nodes: %f\n", numNodes, end_time-start_time);
+		
 		free(a);
 		free(b);
+		free(c);
 	}
 	else
 	{
