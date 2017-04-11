@@ -152,9 +152,9 @@ void Worker(int numNodes, int myrank)
 	RecvOptions(&options);
 	
 	rowsPP = options.N / numNodes;
-	*mat = malloc((options.N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
+	mat = malloc((options.N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
 	
-	//RecvBlock(*mat, 0, 0,  options->N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options->N + 2, 0, FROM_MASTER);
+	//RecvBlock(mat, 0, 0,  options->N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options->N + 2, 0, FROM_MASTER);
 	
 	
 }
