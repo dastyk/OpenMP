@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 {
     int i, timestart, timeend, iter;
  
-    struct Options options;
+    struct Options* options = malloc(sizeof(struct Options));
 
     Init_Default(&options);		/* Init default values	*/
     Read_Options(argc,argv, &options);	/* Read arguments	*/
@@ -48,9 +48,13 @@ int main(int argc, char **argv)
     if (options.PRINT == 1)
 		Print_Matrix();
     printf("\nNumber of iterations = %d\n", iter);
+	
+	
+	free(options);
+	
 }
 
-int work()
+int work(struct Options* options)
 {
     double prevmax_even, prevmax_odd, maxi, sum, w;
     int	m, n, N, i;
@@ -60,8 +64,8 @@ int work()
 
     prevmax_even = 0.0;
     prevmax_odd = 0.0;
-    N = glob->N;
-    w = glob->w;
+    N = options->N;
+    w = options->w;
     
     while (!finished) {
 	iteration++;
@@ -70,9 +74,9 @@ int work()
 	    for (m = 1; m < N+1; m++) {
 		for (n = 1; n < N+1; n++) {
 		    if (((m + n) % 2) == 0)
-			glob->A[m][n] = (1 - w) * glob->A[m][n] 
-			    + w * (glob->A[m-1][n] + glob->A[m+1][n] 
-				   + glob->A[m][n-1] + glob->A[m][n+1]) / 4;
+			options->A[m][n] = (1 - w) * options->A[m][n] 
+			    + w * (options->A[m-1][n] + options->A[m+1][n] 
+				   + options->A[m][n-1] + options->A[m][n+1]) / 4;
 		}
 	    }
 	    /* Calculate the maximum sum of the elements */
@@ -80,13 +84,13 @@ int work()
 	    for (m = 1; m < N+1; m++) {
 		sum = 0.0;
 		for (n = 1; n < N+1; n++)
-		    sum += glob->A[m][n];
+		    sum += options->A[m][n];
 		if (sum > maxi)
 		    maxi = sum;
 	    }
 	    /* Compare the sum with the prev sum, i.e., check wether 
 	     * we are finished or not. */
-	    if (fabs(maxi - prevmax_even) <= glob->difflimit)
+	    if (fabs(maxi - prevmax_even) <= options->difflimit)
 		finished = 1;
 	    if ((iteration%100) == 0)
 		printf("Iteration: %d, maxi = %f, prevmax_even = %f\n",
@@ -99,9 +103,9 @@ int work()
 	    for (m = 1; m < N+1; m++) {
 		for (n = 1; n < N+1; n++) {
 		    if (((m + n) % 2) == 1)
-			glob->A[m][n] = (1 - w) * glob->A[m][n] 
-			    + w * (glob->A[m-1][n] + glob->A[m+1][n] 
-				   + glob->A[m][n-1] + glob->A[m][n+1]) / 4;
+			options->A[m][n] = (1 - w) * options->A[m][n] 
+			    + w * (options->A[m-1][n] + options->A[m+1][n] 
+				   + options->A[m][n-1] + options->A[m][n+1]) / 4;
 		}
 	    }
 	    /* Calculate the maximum sum of the elements */
@@ -109,13 +113,13 @@ int work()
 	    for (m = 1; m < N+1; m++) {
 		sum = 0.0;
 		for (n = 1; n < N+1; n++)
-		    sum += glob->A[m][n];	
+		    sum += options->A[m][n];	
 		if (sum > maxi)			
 		    maxi = sum;
 	    }
 	    /* Compare the sum with the prev sum, i.e., check wether 
 	     * we are finished or not. */
-	    if (fabs(maxi - prevmax_odd) <= glob->difflimit)
+	    if (fabs(maxi - prevmax_odd) <= options->difflimit)
 		finished = 1;
 	    if ((iteration%100) == 0)
 		printf("Iteration: %d, maxi = %f, prevmax_odd = %f\n",
@@ -225,12 +229,12 @@ Print_Matrix(struct Options* options)
 void 
 Init_Default(struct Options* options)
 {
-    glob->N = 2048;
-    glob->difflimit = 0.00001*glob->N;
-    glob->Init = "rand";
-    glob->maxnum = 15.0;
-    glob->w = 0.5;
-    glob->PRINT = 0;
+    options->N = 2048;
+    options->difflimit = 0.00001*options->N;
+    options->Init = "rand";
+    options->maxnum = 15.0;
+    options->w = 0.5;
+    options->PRINT = 0;
 }
  
 int
