@@ -145,7 +145,7 @@ void Master(struct Options* options, int numNodes)
 		
 		for (y = 0; y < row; y++){
 			for (x = 0; x < col; x++) 
-				printf(" %7.2f", options->A[y][x];
+				printf(" %7.2f", options->A[y][x]);
 			printf("\n");
 		}
 		
