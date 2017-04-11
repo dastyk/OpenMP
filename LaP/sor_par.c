@@ -140,7 +140,7 @@ void Master(struct Options* options, int numNodes)
 
 	
 		SendBlock(&options->A[0][0], 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), MAX_SIZE + 2, i, FROM_MASTER);
-		sleep(2);
+		sleep(1);
 		
 	}
 }
