@@ -138,7 +138,7 @@ void Master(struct Options* options, int numNodes)
 	for (i = 1; i < numNodes; i++)
 	{
 		
-		SendBlock((double*)options->A, 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), options->N + 2, i, FROM_MASTER);
+		SendBlock(&options->A[0][0], 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), options->N + 2, i, FROM_MASTER);
 		sleep(1);
 		
 	}
@@ -159,7 +159,7 @@ void Worker(int numNodes, int myrank)
 	RecvBlock(mat, 0, 0,  options.N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options.N + 2, 0, FROM_MASTER);
 	
 	row = rowsPP + (myrank == numNodes -1 ? 1 : 0);
-	col = options.N;
+	col = options.N + 2;
 	
 
     for (y = 0; y < row; y++){
