@@ -16,7 +16,12 @@
 #define EVEN_TURN 0 /* shall we calculate the 'red' or the 'black' elements */
 #define ODD_TURN  1
 
+#define FROM_MASTER 1	/* setting a message type */
+#define FROM_WORKER 2	/* setting a message type */
+
 typedef double matrix[MAX_SIZE+2][MAX_SIZE+2]; /* (+2) - boundary elements */
+
+MPI_Status status;
 
 struct Options {
     int		N;		/* matrix size		*/
@@ -28,32 +33,124 @@ struct Options {
     matrix	A;		/* matrix A		*/
 };
 
+struct SlimOptions // Sent to worker nodes, as we don't need everything.
+{
+	int N;
+	double difflimit;
+	double w;
+};
+
+void SendOptions(struct Options* options)
+{
+	printf("Sending N=%d, difflimit=%f, w=%f\n", options->N, options->difflimit, options->w);
+	
+	MPI_Bcast(&options->N, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&options->difflimit, 2, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+}
+void RecvOptions(struct SlimOptions* options)
+{
+	
+	MPI_Bcast(&options->N, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(&options->difflimit, 2, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	printf("Recieved N=%d, difflimit=%f, w=%f\n", options->N, options->difflimit, options->w);
+}
+void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int dest, int tag)
+{
+	int offset;
+	data += stride*y+x;
+	for(offset = 0; offset < rows; offset++)
+	{
+		MPI_Send(data, cols, MPI_DOUBLE, dest, tag, MPI_COMM_WORLD);	
+		data += stride;		
+	}	
+}
+
+void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int src, int tag)
+{
+	int offset;
+	data += stride*y+x;
+	for(offset = 0; offset < rows; offset++)
+	{
+		MPI_Recv(data, cols, MPI_DOUBLE, src, tag, MPI_COMM_WORLD, &status);	
+		data += stride;		
+	}
+}
+
 /* forward declarations */
 int work(struct Options* options);
 void Init_Matrix(struct Options* options);
 void Print_Matrix(struct Options* options);
 void Init_Default(struct Options* options);
 int Read_Options(int, char **, struct Options* options);
+void SendWork(struct Options* options, int numNodes);
+void RecvWork(struct SlimOptions* options, int numNodes, int myrank, double** mat);
 
 int main(int argc, char **argv)
 {
     int i, timestart, timeend, iter;
- 
-    struct Options* options = malloc(sizeof(struct Options));
+	int myrank, numNodes;
+	int dest, src, offset;
+    struct Options* options;
+	
+	
+	MPI_Init(&argc, &argv);
+	
+	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	
+	if(myrank == 0)
+	{
+		options = malloc(sizeof(struct Options));
+		
+		
+		Init_Default(options);		/* Init default values	*/
+		Read_Options(argc,argv, options);	/* Read arguments	*/
+		Init_Matrix(options);		/* Init the matrix	*/
+		
+		SendWork(options);			/*Send work to each worker*/
+		
 
-    Init_Default(options);		/* Init default values	*/
-    Read_Options(argc,argv, options);	/* Read arguments	*/
-    Init_Matrix(options);		/* Init the matrix	*/
-    iter = work(options);
-    if (options->PRINT == 1)
-		Print_Matrix(options);
-    printf("\nNumber of iterations = %d\n", iter);
+		
+		//iter = work(options);
+		if (options->PRINT == 1)
+			Print_Matrix(options);
+		printf("\nNumber of iterations = %d\n", iter);
 	
+		free(options);
 	
-	free(options);
+	}
+  
+	
+	MPI_Finalize();
+}
+void SendWork(struct Options* options, int numNodes)
+{
+	int i;
+	int rowsPP = options->N / numNodes;
+
+	SendOptions(options);
+	
+	for (i = 1; i < numNodes; i++)
+	{
+		
+		//SendBlock(options->A, 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), options->N + 2, i, FROM_MASTER);
+		
+	}
+}
+void RecvWork(struct SlimOptions* options, int numNodes, int myrank, double** mat)
+{
+	int i;
+	int rowsPP;
+	
+	RecvOptions(options);
+	
+	rowsPP = options->N / numNodes;
+	*mat = malloc((options->N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
+	
+	//RecvBlock(*mat, 0, 0,  options->N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options->N + 2, 0, FROM_MASTER);
+	
 	
 }
-
 int work(struct Options* options)
 {
     double prevmax_even, prevmax_odd, maxi, sum, w;

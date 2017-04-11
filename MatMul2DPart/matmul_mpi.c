@@ -103,43 +103,51 @@ int main(int argc, char **argv)
 	
 	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	
+	
+	// Handle the first two cases a bit different to the rest.
 	if(numNodes == 1)
 		px = 1;
 	else if(numNodes == 2)
 		px = 1;
 	else
-		px = 2;
-	py = numNodes  / px;
-	cx = SIZE / px;
-	cy = SIZE / py;
+		px = 2; // Then we divde the data once in the middle along the columns.
+	py = numNodes  / px; // Number of processors in the y direction.
+
+	cx = SIZE / px;	// Number of columns per process
+	cy = SIZE / py; // Number of rows per process.
 	
 	if(myrank == 0) // Master
 	{
+		// Allocate the main matricies
 		double* a = malloc(SIZE*SIZE*sizeof(double));
 		init_matrix(a, SIZE);
 		double* b = malloc(SIZE*SIZE*sizeof(double));
 		init_matrix(b, SIZE);
 		double* c = malloc(SIZE*SIZE*sizeof(double));
 		
-		#ifdef DEBUG
-			printf("Num Nodes: %d\n", numNodes);
-		#endif
+
+		printf("Num Nodes: %d\n", numNodes);
+
 		
 		start_time = MPI_Wtime();
+		
+		// Send one block to each worker
 		for(y = 0; y < py; y++)
 		{
 			for(x = 0; x < px; x++)
 			{
 				dest = y*px + x;
-				if(dest != 0)
-				{				
-					SendBlock(a, 0, y*cy, SIZE, cy, SIZE, dest, FROM_MASTER);
-					SendBlock(b, x*cx, 0, cx, SIZE, SIZE, dest, FROM_MASTER);
+				if(dest != 0) // Skip the master
+				{			
+					// SendBlock(/*matrix*/,/*x offset*/, /*y offset*/, /*cols*/, /*rows*/, /*Matrix stride*/...)
+					SendBlock(a, 0, y*cy, SIZE, cy, SIZE, dest, FROM_MASTER); // Send the rows of A needed to calculate the area (x*cx, y*cy) - (x*cx +cx, y*cy + cy)
+					SendBlock(b, x*cx, 0, cx, SIZE, SIZE, dest, FROM_MASTER); // Send the coloums of B needed.
 				}
 			}
 		}
 		
-		
+		// Master calc
 		for(y = 0; y < cy; y++)
 		{
 			for(x = 0; x < cx; x++)
@@ -156,6 +164,8 @@ int main(int argc, char **argv)
 		#ifdef DEBUG
 		printf("Node %d done\n", myrank);
 		#endif
+		
+		//Collect the work from the children
 		for(y = 0; y < py; y++)
 		{
 			for(x = 0; x < px; x++)
@@ -183,15 +193,18 @@ int main(int argc, char **argv)
 		free(b);
 		free(c);
 	}
-	else
+	else // Workers
 	{
+		// Allocate local space for the worker.
 		double* a = malloc(SIZE*cy*sizeof(double));
 		double* b = malloc(cx*SIZE*sizeof(double));
 		double* c = malloc(cx*cy*sizeof(double));
 		
+		// Collect work
 		RecvBlock(a, 0, 0,SIZE,cy, SIZE, 0, FROM_MASTER);
 		RecvBlock(b, 0, 0,cx,SIZE, cx, 0, FROM_MASTER);
-
+	
+		// Do calcs
 		for(y = 0; y < cy; y++)
 		{
 			for(x = 0; x < cx; x++)
@@ -204,6 +217,7 @@ int main(int argc, char **argv)
 				c[y*cx + x] = sum;
 			}
 		}
+		
 		#ifdef DEBUG
 		printf("Node %d done\n", myrank);
 		#endif
