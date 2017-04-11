@@ -134,7 +134,7 @@ void Master(struct Options* options, int numNodes)
 	int rowsPP = options->N / numNodes;
 
 	SendOptions(options);
-sleep(2);
+
 	for (i = 1; i < numNodes; i++)
 	{
 
