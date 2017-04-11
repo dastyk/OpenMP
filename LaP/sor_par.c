@@ -134,13 +134,14 @@ void Master(struct Options* options, int numNodes)
 	int rowsPP = options->N / numNodes;
 
 	SendOptions(options);
+sleep(2);
 
 	for (i = 1; i < numNodes; i++)
 	{
 
 	
 		SendBlock(&options->A[0][0], 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), MAX_SIZE + 2, i, FROM_MASTER);
-		sleep(1);
+		sleep(2);
 		
 	}
 }
@@ -150,14 +151,24 @@ void Worker(int numNodes, int myrank)
 	int rowsPP;
 	struct SlimOptions options;
 	double* mat;
-
+	int x,y, row,col;
+	
 	RecvOptions(&options);
 	
 	rowsPP = options.N / numNodes;
 	mat = malloc((options.N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
 	
 	RecvBlock(mat, 0, 0,  options.N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options.N + 2, 0, FROM_MASTER);
+	
+	row = rowsPP + (myrank == numNodes -1 ? 1 : 0);
+	col = options.N + 2;
+	
 
+    for (y = 0; y < row; y++){
+        for (x = 0; x < col; x++) 
+            printf(" %7.2f", mat[y*(options.N + 2) + x]);
+        printf("\n");
+    }
 	free(mat);
 	
 }
