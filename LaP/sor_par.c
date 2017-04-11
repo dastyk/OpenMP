@@ -41,9 +41,9 @@ int main(int argc, char **argv)
  
     struct Options* options = malloc(sizeof(struct Options));
 
-    Init_Default(&options);		/* Init default values	*/
-    Read_Options(argc,argv, &options);	/* Read arguments	*/
-    Init_Matrix(&options);		/* Init the matrix	*/
+    Init_Default(options);		/* Init default values	*/
+    Read_Options(argc,argv, options);	/* Read arguments	*/
+    Init_Matrix(options);		/* Init the matrix	*/
     iter = work();
     if (options.PRINT == 1)
 		Print_Matrix();
