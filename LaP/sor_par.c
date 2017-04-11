@@ -83,8 +83,8 @@ void Init_Matrix(struct Options* options);
 void Print_Matrix(struct Options* options);
 void Init_Default(struct Options* options);
 int Read_Options(int, char **, struct Options* options);
-void SendWork(struct Options* options, int numNodes);
-void RecvWork(struct SlimOptions* options, int numNodes, int myrank, double** mat);
+void Master(struct Options* options, int numNodes);
+void Worker(int numNodes, int myrank);
 
 int main(int argc, char **argv)
 {
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 		Read_Options(argc,argv, options);	/* Read arguments	*/
 		Init_Matrix(options);		/* Init the matrix	*/
 		
-		SendWork(options);			/*Send work to each worker*/
+		Master(options, numNodes);			/*Send work to each worker*/
 		
 
 		
@@ -120,11 +120,15 @@ int main(int argc, char **argv)
 		free(options);
 	
 	}
-  
+	else if(myrank == 1)
+	{
+		Worker(numNodes, myrank);
+		
+	}
 	
 	MPI_Finalize();
 }
-void SendWork(struct Options* options, int numNodes)
+void Master(struct Options* options, int numNodes)
 {
 	int i;
 	int rowsPP = options->N / numNodes;
@@ -138,15 +142,17 @@ void SendWork(struct Options* options, int numNodes)
 		
 	}
 }
-void RecvWork(struct SlimOptions* options, int numNodes, int myrank, double** mat)
+void Worker(int numNodes, int myrank)
 {
 	int i;
 	int rowsPP;
+	struct SlimOptions options;
+	double* mat;
 	
-	RecvOptions(options);
+	RecvOptions(&options);
 	
-	rowsPP = options->N / numNodes;
-	*mat = malloc((options->N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
+	rowsPP = options.N / numNodes;
+	*mat = malloc((options.N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
 	
 	//RecvBlock(*mat, 0, 0,  options->N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options->N + 2, 0, FROM_MASTER);
 	
