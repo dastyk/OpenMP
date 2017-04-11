@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     Init_Default(options);		/* Init default values	*/
     Read_Options(argc,argv, options);	/* Read arguments	*/
     Init_Matrix(options);		/* Init the matrix	*/
-    iter = work();
+    iter = work(options);
     if (options.PRINT == 1)
 		Print_Matrix();
     printf("\nNumber of iterations = %d\n", iter);
