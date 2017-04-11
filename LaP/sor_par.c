@@ -132,12 +132,25 @@ void Master(struct Options* options, int numNodes)
 {
 	int i;
 	int rowsPP = options->N / numNodes;
-
+	int x,y, row,col;
 	SendOptions(options);
+	double* mat;
 	
 	for (i = 1; i < numNodes; i++)
 	{
+		row = rowsPP + (i == numNodes -1 ? 1 : 0);
+		col = options.N + 2;
+		mat = &options->A[0][0];
 		
+		
+		for (y = 0; y < row; y++){
+			for (x = 0; x < col; x++) 
+				printf(" %7.2f", mat[y*(options.N + 2) + x]);
+			printf("\n");
+		}
+		
+		sleep(1);
+	
 		SendBlock(&options->A[0][0], 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), options->N + 2, i, FROM_MASTER);
 		sleep(1);
 		
