@@ -139,13 +139,13 @@ void Master(struct Options* options, int numNodes)
 	for (i = 1; i < numNodes; i++)
 	{
 		row = rowsPP + (i == numNodes -1 ? 1 : 0);
-		col = options.N + 2;
+		col = options->N + 2;
 		mat = &options->A[0][0];
 		
 		
 		for (y = 0; y < row; y++){
 			for (x = 0; x < col; x++) 
-				printf(" %7.2f", mat[y*(options.N + 2) + x]);
+				printf(" %7.2f", mat[y*(options->N + 2) + x]);
 			printf("\n");
 		}
 		
