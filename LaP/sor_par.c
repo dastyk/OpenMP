@@ -177,7 +177,7 @@ row = rowsPP = 4;
 
     for (y = 0; y < row; y++){
         for (x = 0; x < col; x++) 
-            printf(" %7.2f", mat[y*stride + x]);
+            printf(" %7.2f", mat[y*col + x]);
         printf("\n");
     }
 	
