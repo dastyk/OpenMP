@@ -110,6 +110,7 @@ int main(int argc, char **argv)
 		iter = Master(&options, numNodes);			/*Send work to each worker*/
 		
 
+		sleep(1);
 		
 		//iter = work(options);
 		if (options.PRINT == 1)
