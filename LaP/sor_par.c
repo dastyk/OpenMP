@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 }
 int Master(struct Options* options, int numNodes)
 {
-	int i;
+	int i, iter;
 	int rowsPP = options->N / numNodes;
 
 	SendOptions(options);
@@ -142,8 +142,12 @@ int Master(struct Options* options, int numNodes)
 		options->N + 2, 
 		i, FROM_MASTER);	
 	}
-	return work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
+	iter = work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
 	
+	// Get data from workers
+	MPI_Gather(options->A, (options->N + 2) * (rowsPP + 1), MPI_DOUBLE, 
+	&options->A[(rowsPP + 1)*(options->N + 2)], rowsPP*(options->N + 2), MPI_DOUBLE,
+	0, MPI_COMM_WORLD);
 	
 }
 void Worker(int numNodes, int myrank)
@@ -168,7 +172,14 @@ void Worker(int numNodes, int myrank)
 	0, FROM_MASTER);
 
 	
+	// Do the calcs
 	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
+	
+	
+	// Send data to master
+	MPI_Gather(&mat[rowsPP*(options->N + 2)], (options->N + 2) * rowsPP, MPI_DOUBLE, 
+	nullptr, rowsPP*(options->N + 2), MPI_DOUBLE,
+	0, MPI_COMM_WORLD);
 	
 	
 	free(mat);
@@ -274,6 +285,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	    finished = 1;
 	}
     }
+
     return iteration;
 }
 
