@@ -83,7 +83,7 @@ void Init_Matrix(struct Options* options);
 void Print_Matrix(struct Options* options);
 void Init_Default(struct Options* options);
 int Read_Options(int, char **, struct Options* options);
-void Master(struct Options* options, int numNodes);
+int Master(struct Options* options, int numNodes);
 void Worker(int numNodes, int myrank);
 
 int main(int argc, char **argv)
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 		Read_Options(argc,argv, &options);	/* Read arguments	*/
 		Init_Matrix(&options);		/* Init the matrix	*/
 		
-		Master(&options, numNodes);			/*Send work to each worker*/
+		iter = Master(&options, numNodes);			/*Send work to each worker*/
 		
 
 		
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 	
 	MPI_Finalize();
 }
-void Master(struct Options* options, int numNodes)
+int Master(struct Options* options, int numNodes)
 {
 	int i;
 	int rowsPP = options->N / numNodes;
@@ -141,6 +141,9 @@ void Master(struct Options* options, int numNodes)
 		options->N + 2, 
 		i, FROM_MASTER);		
 	}
+	return work(options->N, options->w, options->difflimit, options->A, options->N + 2, myrank, numNodes);
+	
+	
 }
 void Worker(int numNodes, int myrank)
 {
@@ -163,7 +166,8 @@ void Worker(int numNodes, int myrank)
 	options.N + 2, 
 	0, FROM_MASTER);
 
-
+	work(options->N, options->w, options->difflimit, options->A, options->N + 2, myrank, numNodes);
+	
 	
 	free(mat);
 	
