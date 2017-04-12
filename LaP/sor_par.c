@@ -162,8 +162,8 @@ void Worker(int numNodes, int myrank)
 }
 int work(int N, double w, double difflimit, double* A, int stride)
 {
-    double prevmax_even, prevmax_odd, maxi, sum, w;
-    int	m, n, N, i;
+    double prevmax_even, prevmax_odd, maxi, sum;
+    int	m, n, i;
     int finished = 0;
     int turn = EVEN_TURN;
     int iteration = 0;
