@@ -275,6 +275,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 		printf("Node %d, maxi %f\n", myrank, maxi);
 		
 		// Now we need to share the maximum with all other nodes to see if we are finished
+		MPI_Barrier(MPI_COMM_WORLD);
 		MPI_Allreduce(&maxi, &maxiall, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 		MPI_Barrier(MPI_COMM_WORLD);
 		
