@@ -141,7 +141,7 @@ int Master(struct Options* options, int numNodes)
 		stride, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
 		stride, 
 		i, FROM_MASTER);
-sleep(1);
+		//sleep(1);
 		
 	}
 	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes);
@@ -174,14 +174,14 @@ void Worker(int numNodes, int myrank)
 	stride, rowsPP + (myrank == numNodes - 1 ? 1 : 0), /*one extra row if we are the last node*/
 	stride, 
 	0, FROM_MASTER);
-  int x,y;
+  /*int x,y;
 
     for (y = 0; y < rowsPP + 2; y++){
         for (x = 0; x < stride; x++) 
             printf(" %7.2f", mat[y*stride + x]);
         printf("\n");
     }
-	
+	*/
 	// Do the calcs
 	work(options.N, options.w, options.difflimit, mat, stride, myrank, numNodes);
 	
@@ -255,29 +255,29 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	
 	    /* CALCULATE */
 	    for (m = 1; m < rowsPP + 1; m++) {
-		for (n = 1; n < N+1; n++) {
-		    if (((m + n) % 2) == turn)
-			A[m*stride + n] = (1 - w) * A[m*stride + n] 
-			    + w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
-				   + A[m*stride + n-1] + A[m*stride + n+1]) / 4;
-		}
+			for (n = 1; n < N+1; n++) {
+				if (((m + n) % 2) == turn)
+					A[m*stride + n] = (1 - w) * A[m*stride + n] 
+						+ w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
+						+ A[m*stride + n-1] + A[m*stride + n+1]) / 4;
+			}
 	    }
 	    /* Calculate the maximum sum of the elements */
 	    maxi = -999999.0;
 	    for (m = 1; m < rowsPP+1; m++) {
-		sum = 0.0;
-		for (n = 1; n < N+1; n++)
-		    sum += A[m*stride + n];
-		if (sum > maxi)
-		    maxi = sum;
+			sum = 0.0;
+			for (n = 1; n < N+1; n++)
+				sum += A[m*stride + n];
+			if (sum > maxi)
+				maxi = sum;
 	    }
 		
-		//printf("Node %d, maxi %f\n", myrank, maxi);
+		printf("Node %d, maxi %f\n", myrank, maxi);
 		
 		// Now we need to share the maximum with all other nodes to see if we are finished
 		MPI_Allreduce(&maxi, &maxiall, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 		
-		//printf("Node %d, maxiall %f\n", myrank, maxiall);
+		printf("Node %d, maxiall %f\n", myrank, maxiall);
 		
 		
 
