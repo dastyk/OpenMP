@@ -129,56 +129,56 @@ int main(int argc, char **argv)
 }
 int Master(struct Options* options, int numNodes)
 {
-	int i, iter;
+	int i, iter,stride;
 	int rowsPP = options->N / numNodes;
-
+	stride = options->N + 2;
 	SendOptions(options);
 
 	for (i = 1; i < numNodes; i++)
 	{
 		SendBlock(options->A, 
 		0, i*rowsPP + 1, // send the correct rows
-		options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
-		options->N + 2, 
+		stride, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
+		stride, 
 		i, FROM_MASTER);	
 	}
-	iter = work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
+	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes);
 	
 	// Get data from workers
-	MPI_Gather(options->A, (options->N + 2) * (rowsPP + 1), MPI_DOUBLE, 
-	&options->A[rowsPP*(options->N + 2)], rowsPP*(options->N + 2), MPI_DOUBLE,
+	MPI_Gather(options->A, stride * (rowsPP + 1), MPI_DOUBLE, 
+	&options->A[rowsPP*stride], rowsPP*stride, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
 }
 void Worker(int numNodes, int myrank)
 {
 	int i;
-	int rowsPP;
+	int rowsPP, stride;
 	struct SlimOptions options;
 	double* mat;
 
 	RecvOptions(&options);
 	
 	rowsPP = options.N / numNodes;
-	
+	stride = options.N + 2;
 	// Two extra rows for halo elements
-	mat = malloc((options.N + 2)*(rowsPP + 2)*sizeof(double));
+	mat = malloc(stride*(rowsPP + 2)*sizeof(double));
 	
 	
 	RecvBlock(mat, 
 	0, 1, /*Offset y by 1(the halo element)*/ 
-	options.N + 2, rowsPP + (myrank == numNodes - 1 ? 1 : 0), /*one extra row if we are the last node*/
-	options.N + 2, 
+	stride, rowsPP + (myrank == numNodes - 1 ? 1 : 0), /*one extra row if we are the last node*/
+	stride, 
 	0, FROM_MASTER);
 
 	
 	// Do the calcs
-	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
+	work(options.N, options.w, options.difflimit, mat, stride, myrank, numNodes);
 	
 	
 	// Send data to master
-	MPI_Gather(&mat[1*(options.N + 2)], (options.N + 2) * rowsPP, MPI_DOUBLE, 
-	NULL, 0, MPI_DATATYPE_NULL,
+	MPI_Gather(&mat[1*stride], stride * rowsPP, MPI_DOUBLE, 
+	mat, 0, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
 	
