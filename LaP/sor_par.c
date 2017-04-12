@@ -31,7 +31,7 @@ struct Options {
     double	difflimit;	/* stop condition	*/
     double	w;		/* relaxation factor	*/
     int		PRINT;		/* print switch		*/
-    matrix	A;		/* matrix A		*/
+    double*	A;		/* matrix A		*/
 };
 
 struct SlimOptions // Sent to worker nodes, as we don't need everything.
@@ -78,7 +78,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 }
 
 /* forward declarations */
-int work(struct Options* options);
+int work(int N, double w, double difflimit, double* A, int stride);
 void Init_Matrix(struct Options* options);
 void Print_Matrix(struct Options* options);
 void Init_Default(struct Options* options);
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     int i, timestart, timeend, iter;
 	int myrank, numNodes;
 	int dest, src, offset;
-    struct Options* options;
+    struct Options options;
 	
 	
 	MPI_Init(&argc, &argv);
@@ -104,20 +104,19 @@ int main(int argc, char **argv)
 		options = malloc(sizeof(struct Options));
 		
 		
-		Init_Default(options);		/* Init default values	*/
-		Read_Options(argc,argv, options);	/* Read arguments	*/
-		Init_Matrix(options);		/* Init the matrix	*/
+		Init_Default(&options);		/* Init default values	*/
+		Read_Options(argc,argv, &options);	/* Read arguments	*/
+		Init_Matrix(&options);		/* Init the matrix	*/
 		
-		Master(options, numNodes);			/*Send work to each worker*/
+		Master(&options, numNodes);			/*Send work to each worker*/
 		
 
 		
 		//iter = work(options);
-		if (options->PRINT == 1)
-			Print_Matrix(options);
+		if (options.PRINT == 1)
+			Print_Matrix(&options);
 		printf("\nNumber of iterations = %d\n", iter);
 	
-		free(options);
 	
 	}
 	else
@@ -134,15 +133,10 @@ void Master(struct Options* options, int numNodes)
 	int rowsPP = options->N / numNodes;
 
 	SendOptions(options);
-sleep(2);
 
 	for (i = 1; i < numNodes; i++)
 	{
-
-	
-		SendBlock(&options->A[0][0], 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), MAX_SIZE + 2, i, FROM_MASTER);
-		sleep(2);
-		
+		SendBlock(options->A, 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), options->N + 2, i, FROM_MASTER);		
 	}
 }
 void Worker(int numNodes, int myrank)
@@ -151,24 +145,19 @@ void Worker(int numNodes, int myrank)
 	int rowsPP;
 	struct SlimOptions options;
 	double* mat;
-	int x,y, row,col;
-	
+
 	RecvOptions(&options);
 	
 	rowsPP = options.N / numNodes;
 	mat = malloc((options.N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
 	
 	RecvBlock(mat, 0, 0,  options.N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options.N + 2, 0, FROM_MASTER);
-	
-	row = rowsPP + (myrank == numNodes -1 ? 1 : 0);
-	col = options.N + 2;
-	
 
-    for (y = 0; y < row; y++){
-        for (x = 0; x < col; x++) 
-            printf(" %7.2f", mat[y*(options.N + 2) + x]);
-        printf("\n");
-    }
+	
+	
+	
+	
+	
 	free(mat);
 	
 }
@@ -262,9 +251,10 @@ int work(struct Options* options)
 
 void Init_Matrix(struct Options* options)
 {
-    int i, j, N, dmmy;
+    int i, j, N, dmmy, stride;
  
     N = options->N;
+	stride = N+ 2;
     printf("\nsize      = %dx%d ",N,N);
     printf("\nmaxnum    = %d \n",options->maxnum);
     printf("difflimit = %.7lf \n",options->difflimit);
@@ -272,23 +262,26 @@ void Init_Matrix(struct Options* options)
     printf("w	  = %f \n\n",options->w);
     printf("Initializing matrix...");
  
+ 
+	options->A = malloc(stride*stride*sizeof(double));
+ 
     /* Initialize all grid elements, including the boundary */
     for (i = 0; i < N+2; i++) {
 	for (j = 0; j < N+2; j++) {
-	    options->A[i][j] = 0.0;
+	    options->A[i*stride + j] = 0.0;
 	}
     }
     if (strcmp(options->Init,"count") == 0) {
 	for (i = 1; i < N+1; i++){
 	    for (j = 1; j < N+1; j++) {
-		options->A[i][j] = (double)i/2;
+		options->A[i*stride + j] = (double)i/2;
 	    }
 	}
     }
     if (strcmp(options->Init,"rand") == 0) {
 	for (i = 1; i < N+1; i++){
 	    for (j = 1; j < N+1; j++) {
-		options->A[i][j] = (rand() % options->maxnum) + 1.0;
+		options->A[i*stride + j] = (rand() % options->maxnum) + 1.0;
 	    }
 	}
     }
@@ -298,9 +291,9 @@ void Init_Matrix(struct Options* options)
 	    for (j = 1; j < N+1; j++) {
 		dmmy++;
 		if ((dmmy%2) == 0)
-		    options->A[i][j] = 1.0;
+		    options->A[i*stride + j] = 1.0;
 		else
-		    options->A[i][j] = 5.0;
+		    options->A[i*stride + j] = 5.0;
 	    }
 	}
     }
@@ -309,19 +302,19 @@ void Init_Matrix(struct Options* options)
 	
     /* Set the border to the same values as the outermost rows/columns */
     /* fix the corners */
-    options->A[0][0] = options->A[1][1];
-    options->A[0][N+1] = options->A[1][N];
-    options->A[N+1][0] = options->A[N][1];
-    options->A[N+1][N+1] = options->A[N][N];
+    options->A[0* stride + 0] = options->A[1* stride + 1];
+    options->A[0*stride + N+1] = options->A[1*stride + N];
+    options->A[(N+1)*stride + 0] = options->A[N*stride + 1];
+    options->A[(N+1)*stride + N+1] = options->A[N*stride + N];
     /* fix the top and bottom rows */
     for (i = 1; i < N+1; i++) {
-	options->A[0][i] = options->A[1][i];
-	options->A[N+1][i] = options->A[N][i];
+	options->A[0*stride + i] = options->A[1* stride + i];
+	options->A[(N+1)*stride + i] = options->A[N*stride + i];
     }
     /* fix the left and right columns */
     for (i = 1; i < N+1; i++) {
-	options->A[i][0] = options->A[i][1];
-	options->A[i][N+1] = options->A[i][N];
+	options->A[i*stride + 0] = options->A[i*stride + 1];
+	options->A[i* stride + N+1] = options->A[i*stride+ N];
     }
 
     printf("done \n\n");
@@ -332,12 +325,13 @@ void Init_Matrix(struct Options* options)
 void
 Print_Matrix(struct Options* options)
 {
-    int i, j, N;
+    int i, j, N, stride;
  
     N = options->N;
+	stride = N + 2;
     for (i=0; i<N+2 ;i++){
 	for (j=0; j<N+2 ;j++){
-	    printf(" %f",options->A[i][j]);
+	    printf(" %f",options->A[i*stride + j]);
 	}
 	printf("\n");
     }
