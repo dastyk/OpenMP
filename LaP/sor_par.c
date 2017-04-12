@@ -141,7 +141,7 @@ int Master(struct Options* options, int numNodes)
 		options->N + 2, 
 		i, FROM_MASTER);		
 	}
-	return work(options->N, options->w, options->difflimit, options->A, options->N + 2, myrank, numNodes);
+	return work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
 	
 	
 }
@@ -166,7 +166,7 @@ void Worker(int numNodes, int myrank)
 	options.N + 2, 
 	0, FROM_MASTER);
 
-	work(options->N, options->w, options->difflimit, options->A, options->N + 2, myrank, numNodes);
+	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
 	
 	
 	free(mat);
