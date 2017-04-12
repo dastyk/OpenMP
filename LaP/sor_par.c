@@ -181,7 +181,7 @@ void Worker(int numNodes, int myrank)
             printf(" %7.2f", mat[y*stride + x]);
         printf("\n");
     }
-	
+	 printf("\n\n");
 	// Do the calcs
 	work(options.N, options.w, options.difflimit, mat, stride, myrank, numNodes);
 	
@@ -256,7 +256,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
             printf(" %7.2f", A[y*stride + x]);
         printf("\n");
     }
-	
+	 printf("\n");
 	
 	
 	sleep(10000);
