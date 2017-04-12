@@ -209,8 +209,8 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
     rowsPP = N / numNodes;
 	
 	//	int x,y;
-	/*printf("Node %d, Rows per node %d\n", myrank, rowsPP);
-	   int x,y;
+	printf("Node %d, Rows per node %d\n", myrank, rowsPP);
+	/*   int x,y;
 
     for (y = 0; y < rowsPP + 2; y++){
         for (x = 0; x < N + 2; x++) 
