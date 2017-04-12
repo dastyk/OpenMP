@@ -178,7 +178,7 @@ void Worker(int numNodes, int myrank)
 	
 	// Send data to master
 	MPI_Gather(&mat[rowsPP*(options.N + 2)], (options.N + 2) * rowsPP, MPI_DOUBLE, 
-	nullptr, 0, MPI_DOUBLE,
+	NULL, 0, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
 	
