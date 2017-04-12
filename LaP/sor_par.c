@@ -162,9 +162,9 @@ void Worker(int numNodes, int myrank)
 	RecvOptions(&options);
 	
 	rowsPP = options.N / numNodes;
-	stride = options.N + 2;
-	// Two extra rows for halo elements
-	mat = malloc(stride*(rowsPP + 2)*sizeof(double));
+	stride = options.N + 2; 	// Two extra cols for halo elements
+
+	mat = malloc(stride*(rowsPP + 2)*sizeof(double));	// Two extra rows for halo elements
 	
 	
 	RecvBlock(mat, 
@@ -218,25 +218,29 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	
 	//printf("Node %d, iter %d", myrank, iteration);
 	
-	// Send the halo elements, TODO: Fix so this can run with only one node.
-	if(myrank == 0) // End node
+	// Send the halo elements, 
+	if(numNodes > 1)
 	{
-		SendBlock(A, 0, rowsPP, stride, 1, stride, 1, FROM_WORKER); // Send my halo elements to bottom neighbor 
-		RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, 1, FROM_WORKER); // Recv halo elements from bottom neighbor.
-		
+		if(myrank == 0) // End node
+		{
+			SendBlock(A, 0, rowsPP, stride, 1, stride, 1, FROM_WORKER); // Send my halo elements to bottom neighbor 
+			RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, 1, FROM_WORKER); // Recv halo elements from bottom neighbor.
+			
+		}
+		else if(myrank == numNodes - 1) // End node
+		{
+			RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
+			SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor	
+		}
+		else
+		{
+			RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
+			SendBlock(A, 0, rowsPP, stride, 1, stride, myrank + 1, FROM_WORKER); // Send to bottom neighbor 
+			RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, myrank + 1, FROM_WORKER); // Recv from bottom neighbor
+			SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor			
+		}
 	}
-	else if(myrank == numNodes - 1) // End node
-	{
-		RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
-		SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor	
-	}
-	else
-	{
-		RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
-		SendBlock(A, 0, rowsPP, stride, 1, stride, myrank + 1, FROM_WORKER); // Send to bottom neighbor 
-		RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, myrank + 1, FROM_WORKER); // Recv from bottom neighbor
-		SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor			
-	}
+	
 	
 	// Now that we have the halo elements we can do work.
 	
