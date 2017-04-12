@@ -145,7 +145,7 @@ int Master(struct Options* options, int numNodes)
 	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes);
 	
 	// Get data from workers
-	MPI_Gather(options->A, stride * (rowsPP + 1), MPI_DOUBLE, 
+	MPI_Gather(options->A, 0, MPI_DOUBLE, 
 	&options->A[rowsPP*stride], rowsPP*stride, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
@@ -178,7 +178,7 @@ void Worker(int numNodes, int myrank)
 	
 	// Send data to master
 	MPI_Gather(&mat[1*stride], stride * rowsPP, MPI_DOUBLE, 
-	mat, 0, MPI_DOUBLE,
+	mat, stride * rowsPP, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
 	
