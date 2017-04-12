@@ -140,13 +140,9 @@ int Master(struct Options* options, int numNodes)
 		options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
 		options->N + 2, 
 		i, FROM_MASTER);	
-
-sleep(1);
-		
 	}
-	//return work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
+	return work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
 	
-	return 0;
 	
 }
 void Worker(int numNodes, int myrank)
@@ -170,19 +166,8 @@ void Worker(int numNodes, int myrank)
 	options.N + 2, 
 	0, FROM_MASTER);
 
-	 int x,y,col,row;
-col = options.N +2;
-
-row = rowsPP = 4;
-
-    for (y = 0; y < row; y++){
-        for (x = 0; x < col; x++) 
-            printf(" %7.2f", mat[y*col + x]);
-        printf("\n");
-    }
 	
-	
-//	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
+	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
 	
 	
 	free(mat);
@@ -203,6 +188,8 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	
     while (!finished) {
 	iteration++;
+	
+	printf("Node %d, iter %d", myrank, iter);
 	
 	// Send the halo elements, TODO: Fix so this can run with only one node.
 	if(myrank == 0) // End node
