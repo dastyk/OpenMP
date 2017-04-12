@@ -78,7 +78,7 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 }
 
 /* forward declarations */
-int work(int N, double w, double difflimit, double* A, int stride);
+int work(int N, double w, double difflimit, double* A, int stride, int myrank, int numNodes);
 void Init_Matrix(struct Options* options);
 void Print_Matrix(struct Options* options);
 void Init_Default(struct Options* options);
@@ -135,7 +135,11 @@ void Master(struct Options* options, int numNodes)
 
 	for (i = 1; i < numNodes; i++)
 	{
-		SendBlock(options->A, 0, i*rowsPP + 1, options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), options->N + 2, i, FROM_MASTER);		
+		SendBlock(options->A, 
+		0, i*rowsPP + 1, // send the correct rows
+		options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
+		options->N + 2, 
+		i, FROM_MASTER);		
 	}
 }
 void Worker(int numNodes, int myrank)
@@ -148,45 +152,65 @@ void Worker(int numNodes, int myrank)
 	RecvOptions(&options);
 	
 	rowsPP = options.N / numNodes;
-	mat = malloc((options.N + 2)*(rowsPP + (myrank == numNodes -1 ? 1 : 0))*sizeof(double));
 	
-	RecvBlock(mat, 0, 0,  options.N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options.N + 2, 0, FROM_MASTER);
+	// Two extra rows for halo elements
+	mat = malloc((options.N + 2)*(rowsPP + 2)*sizeof(double));
+	
+	
+	RecvBlock(mat, 
+	0, 1, /*Offset y by 1(the halo element)*/ 
+	options.N + 2, rowsPP + (myrank == numNodes - 1 ? 1 : 0), /*one extra row if we are the last node*/
+	options.N + 2, 
+	0, FROM_MASTER);
 
-	
-	int x,y, row,col;
-	row = options.N + 2;
-	col = row;
-	
-    for (y = 0; y < row; y++){
-        for (x = 0; x < col; x++) 
-            printf(" %7.2f", mat[y*row + x]);
-        printf("\n");
-    }
-	
-	
+
 	
 	free(mat);
 	
 }
-int work(int N, double w, double difflimit, double* A, int stride)
+int work(int N, double w, double difflimit, double* A, int stride, int myrank, int numNodes)
 {
-    double prevmax_even, prevmax_odd, maxi, sum;
-    int	m, n, i;
+    double prevmax[2], maxi, sum, maxiall;
+    int	m, n, i, rowsPP;
     int finished = 0;
     int turn = EVEN_TURN;
     int iteration = 0;
 
-    prevmax_even = 0.0;
-    prevmax_odd = 0.0;
+    prevmax[EVEN_TURN] = 0.0;
+    prevmax[ODD_TURN] = 0.0;
 
-    
+    rowsPP = N / numNodes;
+	
     while (!finished) {
 	iteration++;
-	if (turn == EVEN_TURN) {
-	    /* CALCULATE part A - even elements */
-	    for (m = 1; m < N+1; m++) {
+	
+	// Send the halo elements, TODO: Fix so this can run with only one node.
+	if(myrank == 0) // End node
+	{
+		SendBlock(A, 0, rowsPP, stride, 1, stride, 1, FROM_WORKER); // Send my halo elements to bottom neighbor 
+		RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, 1, FROM_WORKER); // Recv halo elements from bottom neighbor.
+		
+	}
+	else if(myrank == numNodes - 1) // End node
+	{
+		RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
+		SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor	
+	}
+	else
+	{
+		RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
+		SendBlock(A, 0, rowsPP, stride, 1, stride, myrank, FROM_WORKER); // Send to bottom neighbor 
+		RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, myrank, FROM_WORKER); // Recv from bottom neighbor
+		SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor			
+	}
+	
+	// Now that we have the halo elements we can do work.
+	
+	
+	    /* CALCULATE */
+	    for (m = 1; m < rowsPP + 1; m++) {
 		for (n = 1; n < N+1; n++) {
-		    if (((m + n) % 2) == 0)
+		    if (((m + n) % 2) == turn)
 			A[m*stride + n] = (1 - w) * A[m*stride + n] 
 			    + w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
 				   + A[m*stride + n-1] + A[m*stride + n+1]) / 4;
@@ -194,56 +218,37 @@ int work(int N, double w, double difflimit, double* A, int stride)
 	    }
 	    /* Calculate the maximum sum of the elements */
 	    maxi = -999999.0;
-	    for (m = 1; m < N+1; m++) {
+	    for (m = 1; m < rowsPP+1; m++) {
 		sum = 0.0;
 		for (n = 1; n < N+1; n++)
 		    sum += A[m*stride + n];
 		if (sum > maxi)
 		    maxi = sum;
 	    }
-	    /* Compare the sum with the prev sum, i.e., check wether 
-	     * we are finished or not. */
-	    if (fabs(maxi - prevmax_even) <= difflimit)
-		finished = 1;
-	    if ((iteration%100) == 0)
-		printf("Iteration: %d, maxi = %f, prevmax_even = %f\n",
-		       iteration, maxi, prevmax_even);
-	    prevmax_even = maxi;
-	    turn = ODD_TURN;
+		
+	
+		// Now we need to share the maximum with all other nodes to see if we are finished
+		MPI_Allreduce(&maxi, &maxiall, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+		
+		
+		
 
-	} else if (turn == ODD_TURN) {
-	    /* CALCULATE part B - odd elements*/
-	    for (m = 1; m < N+1; m++) {
-		for (n = 1; n < N+1; n++) {
-		    if (((m + n) % 2) == 1)
-			A[m*stride + n] = (1 - w) * A[m*stride + n] 
-			    + w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
-				   + A[m*stride + n-1] + A[m*stride + n+1]) / 4;
-		}
-	    }
-	    /* Calculate the maximum sum of the elements */
-	    maxi = -999999.0;
-	    for (m = 1; m < N+1; m++) {
-		sum = 0.0;
-		for (n = 1; n < N+1; n++)
-		    sum += A[m*stride + n];	
-		if (sum > maxi)			
-		    maxi = sum;
-	    }
-	    /* Compare the sum with the prev sum, i.e., check wether 
+	   if(myrank == 0) // Only let master print this
+	   {
+		    if ((iteration%100) == 0)
+			printf("Iteration: %d, maxi = %f, prevmax_even = %f\n",
+		       iteration, maxi, prevmax[turn]);
+	   }
+	   
+	   	/* Compare the sum with the prev sum, i.e., check wether 
 	     * we are finished or not. */
-	    if (fabs(maxi - prevmax_odd) <= difflimit)
+	    if (fabs(maxi - prevmax[turn]) <= difflimit)
 		finished = 1;
-	    if ((iteration%100) == 0)
-		printf("Iteration: %d, maxi = %f, prevmax_odd = %f\n",
-		       iteration, maxi, prevmax_odd);
-	    prevmax_odd = maxi;
-	    turn = EVEN_TURN;
-	} else {
-	    /* something is very wrong... */
-	    printf("PANIC: Something is really wrong!!!\n");
-	    exit(-1);
-	}
+
+	    prevmax[turn] = maxiall;
+	    turn = (turn + 1) % 2;
+
+	
 	if (iteration > 100000) {
 	    /* exit if we don't converge fast enough */
 	    printf("Max number of iterations reached! Exit!\n");
