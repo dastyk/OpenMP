@@ -153,7 +153,15 @@ void Worker(int numNodes, int myrank)
 	RecvBlock(mat, 0, 0,  options.N + 2, rowsPP + (myrank == numNodes -1 ? 1 : 0), options.N + 2, 0, FROM_MASTER);
 
 	
+	int x,y, row,col;
+	row = options.N + 2;
+	col = row;
 	
+    for (y = 0; y < row; y++){
+        for (x = 0; x < col; x++) 
+            printf(" %7.2f", mat[y*row + x]);
+        printf("\n");
+    }
 	
 	
 	
