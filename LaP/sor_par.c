@@ -189,7 +189,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
     while (!finished) {
 	iteration++;
 	
-	printf("Node %d, iter %d", myrank, iter);
+	printf("Node %d, iter %d", myrank, iteration);
 	
 	// Send the halo elements, TODO: Fix so this can run with only one node.
 	if(myrank == 0) // End node
