@@ -101,7 +101,6 @@ int main(int argc, char **argv)
 	
 	if(myrank == 0)
 	{
-		options = malloc(sizeof(struct Options));
 		
 		
 		Init_Default(&options);		/* Init default values	*/
@@ -161,7 +160,7 @@ void Worker(int numNodes, int myrank)
 	free(mat);
 	
 }
-int work(struct Options* options)
+int work(int N, double w, double difflimit, double* A, int stride)
 {
     double prevmax_even, prevmax_odd, maxi, sum, w;
     int	m, n, N, i;
@@ -171,8 +170,7 @@ int work(struct Options* options)
 
     prevmax_even = 0.0;
     prevmax_odd = 0.0;
-    N = options->N;
-    w = options->w;
+
     
     while (!finished) {
 	iteration++;
@@ -181,9 +179,9 @@ int work(struct Options* options)
 	    for (m = 1; m < N+1; m++) {
 		for (n = 1; n < N+1; n++) {
 		    if (((m + n) % 2) == 0)
-			options->A[m][n] = (1 - w) * options->A[m][n] 
-			    + w * (options->A[m-1][n] + options->A[m+1][n] 
-				   + options->A[m][n-1] + options->A[m][n+1]) / 4;
+			A[m*stride + n] = (1 - w) * A[m*stride + n] 
+			    + w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
+				   + A[m*stride + n-1] + A[m*stride + n+1]) / 4;
 		}
 	    }
 	    /* Calculate the maximum sum of the elements */
@@ -191,13 +189,13 @@ int work(struct Options* options)
 	    for (m = 1; m < N+1; m++) {
 		sum = 0.0;
 		for (n = 1; n < N+1; n++)
-		    sum += options->A[m][n];
+		    sum += A[m*stride + n];
 		if (sum > maxi)
 		    maxi = sum;
 	    }
 	    /* Compare the sum with the prev sum, i.e., check wether 
 	     * we are finished or not. */
-	    if (fabs(maxi - prevmax_even) <= options->difflimit)
+	    if (fabs(maxi - prevmax_even) <= difflimit)
 		finished = 1;
 	    if ((iteration%100) == 0)
 		printf("Iteration: %d, maxi = %f, prevmax_even = %f\n",
@@ -210,9 +208,9 @@ int work(struct Options* options)
 	    for (m = 1; m < N+1; m++) {
 		for (n = 1; n < N+1; n++) {
 		    if (((m + n) % 2) == 1)
-			options->A[m][n] = (1 - w) * options->A[m][n] 
-			    + w * (options->A[m-1][n] + options->A[m+1][n] 
-				   + options->A[m][n-1] + options->A[m][n+1]) / 4;
+			A[m*stride + n] = (1 - w) * A[m*stride + n] 
+			    + w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
+				   + A[m*stride + n-1] + A[m*stride + n+1]) / 4;
 		}
 	    }
 	    /* Calculate the maximum sum of the elements */
@@ -220,13 +218,13 @@ int work(struct Options* options)
 	    for (m = 1; m < N+1; m++) {
 		sum = 0.0;
 		for (n = 1; n < N+1; n++)
-		    sum += options->A[m][n];	
+		    sum += A[m*stride + n];	
 		if (sum > maxi)			
 		    maxi = sum;
 	    }
 	    /* Compare the sum with the prev sum, i.e., check wether 
 	     * we are finished or not. */
-	    if (fabs(maxi - prevmax_odd) <= options->difflimit)
+	    if (fabs(maxi - prevmax_odd) <= difflimit)
 		finished = 1;
 	    if ((iteration%100) == 0)
 		printf("Iteration: %d, maxi = %f, prevmax_odd = %f\n",
