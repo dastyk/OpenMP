@@ -186,9 +186,12 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
     prevmax[ODD_TURN] = 0.0;
 
     rowsPP = N / numNodes;
+	printf("Node %d, Rows per node %d\n", myrank, rowsPP);
 	
     while (!finished) {
 	iteration++;
+	
+	
 	
 	//printf("Node %d, iter %d", myrank, iteration);
 	
