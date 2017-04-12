@@ -149,6 +149,8 @@ int Master(struct Options* options, int numNodes)
 	&options->A[1*stride], rowsPP*stride, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
+	return iter;
+	
 }
 void Worker(int numNodes, int myrank)
 {
@@ -197,14 +199,18 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
     prevmax[ODD_TURN] = 0.0;
 
     rowsPP = N / numNodes;
-	printf("Node %d, Rows per node %d\n", myrank, rowsPP);
+	
+	
+	/*printf("Node %d, Rows per node %d\n", myrank, rowsPP);
 	   int x,y;
 
     for (y = 0; y < rowsPP + 2; y++){
         for (x = 0; x < N + 2; x++) 
             printf(" %7.2f", A[y*stride + x]);
         printf("\n");
-    }
+    }*/
+	
+	
     while (!finished) {
 	iteration++;
 	
