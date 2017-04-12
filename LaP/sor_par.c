@@ -139,10 +139,14 @@ int Master(struct Options* options, int numNodes)
 		0, i*rowsPP + 1, // send the correct rows
 		options->N + 2, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
 		options->N + 2, 
-		i, FROM_MASTER);		
+		i, FROM_MASTER);	
+
+sleep(1);
+		
 	}
-	return work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
+	//return work(options->N, options->w, options->difflimit, options->A, options->N + 2, 0, numNodes);
 	
+	return 0;
 	
 }
 void Worker(int numNodes, int myrank)
@@ -166,7 +170,19 @@ void Worker(int numNodes, int myrank)
 	options.N + 2, 
 	0, FROM_MASTER);
 
-	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
+	 int x,y,col,row;
+col = options.N +2;
+
+row = rowsPP = 4;
+
+    for (y = 0; y < row; y++){
+        for (x = 0; x < col; x++) 
+            printf(" %7.2f", mat[y*stride + x]);
+        printf("\n");
+    }
+	
+	
+//	work(options.N, options.w, options.difflimit, mat, options.N + 2, myrank, numNodes);
 	
 	
 	free(mat);
