@@ -178,7 +178,7 @@ void Worker(int numNodes, int myrank)
 
     for (y = 0; y < rowsPP + 2; y++){
         for (x = 0; x < stride; x++) 
-            printf(" %7.2f", A[y*stride + x]);
+            printf(" %7.2f", mat[y*stride + x]);
         printf("\n");
     }
 	
