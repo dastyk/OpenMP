@@ -208,7 +208,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 
     rowsPP = N / numNodes;
 	
-	
+		int x,y;
 	/*printf("Node %d, Rows per node %d\n", myrank, rowsPP);
 	   int x,y;
 
@@ -231,25 +231,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	{
 		if(myrank == 0) // End node
 		{
-			SendBlock(A, 0, rowsPP, stride, 1, stride, 1, FROM_WORKER); // Send my halo elements to bottom neighbor 
-			RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, 1, FROM_WORKER); // Recv halo elements from bottom neighbor.
-			
-		}
-		else if(myrank == numNodes - 1) // End node
-		{
-			RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
-			SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor	
-		}
-		else
-		{
-			RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
-			SendBlock(A, 0, rowsPP, stride, 1, stride, myrank + 1, FROM_WORKER); // Send to bottom neighbor 
-			RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, myrank + 1, FROM_WORKER); // Recv from bottom neighbor
-			SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor			
-		}
-	}
-	
-	int x,y;
+			printf("Node %d\n", myrank);
 
     for (y = 0; y < rowsPP + 2; y++){
         for (x = 0; x < N + 2; x++) 
@@ -257,6 +239,45 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
         printf("\n");
     }
 	 printf("\n");
+	sleep(1);
+			SendBlock(A, 0, rowsPP, stride, 1, stride, 1, FROM_WORKER); // Send my halo elements to bottom neighbor 
+			RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, 1, FROM_WORKER); // Recv halo elements from bottom neighbor.
+			
+		}
+		else if(myrank == numNodes - 1) // End node
+		{
+			RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
+			printf("Node %d\n", myrank);
+
+    for (y = 0; y < rowsPP + 2; y++){
+        for (x = 0; x < N + 2; x++) 
+            printf(" %7.2f", A[y*stride + x]);
+        printf("\n");
+    }
+	 printf("\n");
+	sleep(1);
+			SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor	
+		}
+		else
+		{
+			RecvBlock(A, 0, 0, stride, 1, stride, myrank - 1, FROM_WORKER); // Recv from top neighbor
+			printf("Node %d\n", myrank);
+
+    for (y = 0; y < rowsPP + 2; y++){
+        for (x = 0; x < N + 2; x++) 
+            printf(" %7.2f", A[y*stride + x]);
+        printf("\n");
+    }
+	 printf("\n");
+	sleep(1);
+			SendBlock(A, 0, rowsPP, stride, 1, stride, myrank + 1, FROM_WORKER); // Send to bottom neighbor 
+			RecvBlock(A, 0, rowsPP + 1, stride, 1, stride, myrank + 1, FROM_WORKER); // Recv from bottom neighbor
+			SendBlock(A, 0, 1, stride, 1, stride, myrank - 1, FROM_WORKER); // Send to top neighbor			
+		}
+	}
+	
+
+
 	
 	
 	sleep(100000);
