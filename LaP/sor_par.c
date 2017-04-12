@@ -145,8 +145,8 @@ int Master(struct Options* options, int numNodes)
 	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes);
 	
 	// Get data from workers
-	MPI_Gather(options->A, 0, MPI_DOUBLE, 
-	&options->A[rowsPP*stride], rowsPP*stride, MPI_DOUBLE,
+	MPI_Gather(&options->A[1*stride], stride * rowsPP , MPI_DOUBLE, 
+	&options->A[1*stride], rowsPP*stride, MPI_DOUBLE,
 	0, MPI_COMM_WORLD);
 	
 }
