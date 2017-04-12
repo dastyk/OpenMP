@@ -279,7 +279,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 
 	
 	
-	sleep(100000);
+	sleep(2);
 	
 	// Now that we have the halo elements we can do work.
 	
