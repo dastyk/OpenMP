@@ -259,7 +259,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	 printf("\n");
 	
 	
-	sleep(10);
+	sleep(100000);
 	
 	// Now that we have the halo elements we can do work.
 	
