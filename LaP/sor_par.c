@@ -141,7 +141,7 @@ int Master(struct Options* options, int numNodes)
 		stride, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
 		stride, 
 		i, FROM_MASTER);
-		sleep(1);
+		//sleep(1);
 		
 	}
 	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes);
@@ -174,14 +174,14 @@ void Worker(int numNodes, int myrank)
 	stride, rowsPP + (myrank == numNodes - 1 ? 1 : 0), /*one extra row if we are the last node*/
 	stride, 
 	0, FROM_MASTER);
-  int x,y;
+  /*int x,y;
 
     for (y = 0; y < rowsPP + 2; y++){
         for (x = 0; x < stride; x++) 
             printf(" %7.2f", mat[y*stride + x]);
         printf("\n");
     }
-	 printf("\n\n");
+	 printf("\n\n");*/
 	// Do the calcs
 	work(options.N, options.w, options.difflimit, mat, stride, myrank, numNodes);
 	
