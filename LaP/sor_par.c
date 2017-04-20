@@ -87,11 +87,11 @@ void Worker(int numNodes, int myrank);
 
 int main(int argc, char **argv)
 {
-    int i, timestart, timeend, iter;
+    int i, iter;
 	int myrank, numNodes;
 	int dest, src, offset;
     struct Options options;
-	
+	double timestart, timeend;
 	
 	MPI_Init(&argc, &argv);
 	
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
 		//iter = work(options);
 		if (options.PRINT == 1)
 			Print_Matrix(&options);
-		printf("\nNumber of iterations = %d, Exec Time: %f\n", iter, timeend-timestart);
+		printf("\nNumber of iterations = %2d, Exec Time: %f\n", iter, timeend-timestart);
 	
 		free(options.A);
 	}
