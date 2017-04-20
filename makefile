@@ -5,3 +5,8 @@ all:
 	
 	gcc -o sor_seq sor_seq.c
 	mpicc -o sor_par sor_par.c
+	
+clean:
+	rm mm_*
+	rm sor_par
+	rm sor_seq
