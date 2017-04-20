@@ -39,7 +39,7 @@ int
 main(int argc, char **argv)
 {
     int i, timestart, timeend, iter;
- 
+	srand(1234);
     glob = (struct globmem *) malloc(sizeof(struct globmem));
 
     Init_Default();		/* Init default values	*/

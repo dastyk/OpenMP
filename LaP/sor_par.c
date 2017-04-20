@@ -87,6 +87,7 @@ void Worker(int numNodes, int myrank);
 
 int main(int argc, char **argv)
 {
+	
     int i, iter;
 	int myrank, numNodes;
 	int dest, src, offset;
@@ -97,6 +98,8 @@ int main(int argc, char **argv)
 	
 	MPI_Comm_size(MPI_COMM_WORLD, &numNodes);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+	
+	srand(1234);
 	
 	if(myrank == 0)
 	{
