@@ -20,7 +20,6 @@
 #define FROM_MASTER 1	/* setting a message type */
 #define FROM_WORKER 2	/* setting a message type */
 
-typedef double matrix[MAX_SIZE+2][MAX_SIZE+2]; /* (+2) - boundary elements */
 
 MPI_Status status;
 
@@ -107,21 +106,26 @@ int main(int argc, char **argv)
 		Read_Options(argc,argv, &options);	/* Read arguments	*/
 		Init_Matrix(&options);		/* Init the matrix	*/
 		
-		iter = Master(&options, numNodes);			/*Send work to each worker*/
 		
+		timestart = MPI_Wtime();
+		
+		
+		iter = Master(&options, numNodes);			/*Send work to each worker then do some work*/
+		
+		timeend = MPI_Wtime();
 
 		sleep(1);
 		
 		//iter = work(options);
 		if (options.PRINT == 1)
 			Print_Matrix(&options);
-		printf("\nNumber of iterations = %d\n", iter);
+		printf("\nNumber of iterations = %d, Exec Time: %f\n", iter, timeend-timestart);
 	
-	
+		free(options.A);
 	}
 	else
 	{
-		Worker(numNodes, myrank);
+		Worker(numNodes, myrank); // Recv work then do calcs
 		
 	}
 	
@@ -130,21 +134,24 @@ int main(int argc, char **argv)
 int Master(struct Options* options, int numNodes)
 {
 	int i, iter,stride;
-	int rowsPP = options->N / numNodes;
-	stride = options->N + 2;
-	SendOptions(options);
+	int rowsPP = options->N / numNodes; // Number of Rows that each node will work on.
+	stride = options->N + 2; // The stride of the total matrix(number of columns)
+	
+	
+	SendOptions(options); // Send the options for the calculations
 
 	for (i = 1; i < numNodes; i++)
 	{
 		SendBlock(options->A, 
-		0, i*rowsPP + 1, // send the correct rows
+		0, i*rowsPP + 1, // Offset for the correct rows
 		stride, rowsPP + (i == numNodes -1 ? 1 : 0), // One extra if last node
 		stride, 
 		i, FROM_MASTER);
 		//sleep(1);
 		
 	}
-	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes);
+	
+	iter = work(options->N, options->w, options->difflimit, options->A, stride, 0, numNodes); // Enter the normal working state
 	
 	// Get data from workers
 	MPI_Gather(&options->A[1*stride], stride * rowsPP , MPI_DOUBLE, 
@@ -161,7 +168,7 @@ void Worker(int numNodes, int myrank)
 	struct SlimOptions options;
 	double* mat;
 
-	RecvOptions(&options);
+	RecvOptions(&options); // Recv the options for the calcs
 	
 	rowsPP = options.N / numNodes;
 	stride = options.N + 2; 	// Two extra cols for halo elements
@@ -183,7 +190,7 @@ void Worker(int numNodes, int myrank)
     }
 	 printf("\n\n");*/
 	// Do the calcs
-	work(options.N, options.w, options.difflimit, mat, stride, myrank, numNodes);
+	work(options.N, options.w, options.difflimit, mat, stride, myrank, numNodes);// Enter the normal working state
 	
 	
 	// Send data to master
@@ -195,6 +202,8 @@ void Worker(int numNodes, int myrank)
 	free(mat);
 	
 }
+
+/* This is the same for both master and workers */
 int work(int N, double w, double difflimit, double* A, int stride, int myrank, int numNodes)
 {
     double prevmax[2], maxi, sum, maxiall;
@@ -227,7 +236,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	//printf("Node %d, iter %d", myrank, iteration);
 	
 	// Send the halo elements, 
-	if(numNodes > 1)
+	if(numNodes > 1) // If we only have one node skip all communications
 	{
 		if(myrank == 0) // End node
 		{
@@ -268,7 +277,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	    /* CALCULATE */
 	    for (m = 1; m < rowsPP + 1; m++) {
 			for (n = 1; n < N+1; n++) {
-				if (((m + n) % 2) == turn)
+				if (((m + n) % 2) == turn) // Odd or even turn
 					A[m*stride + n] = (1 - w) * A[m*stride + n] 
 						+ w * (A[(m-1)*stride + n] + A[(m+1)*stride + n] 
 						+ A[m*stride + n-1] + A[m*stride + n+1]) / 4;
@@ -306,7 +315,7 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 			finished = 1;
 
 	    prevmax[turn] = maxiall;
-	    turn = (turn + 1) % 2;
+	    turn = (turn + 1) % 2; // Odd -> Even, Even -> Odd
 
 	
 	if (iteration > 100000) {
@@ -335,7 +344,7 @@ void Init_Matrix(struct Options* options)
     printf("Initializing matrix...");
  
  
-	options->A = malloc(stride*stride*sizeof(double));
+	options->A = malloc(stride*stride*sizeof(double)); // Allocate matrix
  
     /* Initialize all grid elements, including the boundary */
     for (i = 0; i < N+2; i++) {
