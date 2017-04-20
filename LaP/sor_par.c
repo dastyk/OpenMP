@@ -296,14 +296,14 @@ int work(int N, double w, double difflimit, double* A, int stride, int myrank, i
 	   if(myrank == 0) // Only let master print this
 	   {
 		    if ((iteration%100) == 0)
-			printf("Iteration: %d, maxiall = %f, prevmax[%s] = %f\n",
-		       iteration, maxiall, turn ? "ODD_TURN" : "EVEN_TURN", prevmax[turn]);
+				printf("Iteration: %d, maxiall = %f, prevmax[%s] = %f\n",
+				iteration, maxiall, turn ? "ODD_TURN" : "EVEN_TURN", prevmax[turn]);
 	   }
 	   
 	   	/* Compare the sum with the prev sum, i.e., check wether 
 	     * we are finished or not. */
 	    if (fabs(maxiall - prevmax[turn]) <= difflimit)
-		finished = 1;
+			finished = 1;
 
 	    prevmax[turn] = maxiall;
 	    turn = (turn + 1) % 2;

@@ -43,7 +43,7 @@ print_matrix(double* mat, int col, int row, int stride)
         printf("\n");
     }
 }
-
+/*Send data into the data pointer, with an offset of x,y and a total of cols column and rows rows. Stride is the number if columns in the matrix.*/
 void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int dest, int tag)
 {
 	int offset;
@@ -59,6 +59,8 @@ void SendBlock(double* data, int x, int y, int cols, int rows, int stride, int d
 	}	
 }
 
+
+/*Recv data into the data pointer, with an offset of x,y and a total of cols column and rows rows. Stride is the number if columns in the matrix.*/
 void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int src, int tag)
 {
 	int offset;
@@ -81,12 +83,6 @@ void RecvBlock(double* data, int x, int y, int cols, int rows, int stride, int s
 	#endif
 }
 
-
-int mod(int a, int b)
-{
-    int r = a % b;
-    return r < 0 ? r + b : r;
-}
 
 int main(int argc, char **argv)
 {
@@ -142,7 +138,7 @@ int main(int argc, char **argv)
 				{			
 					// SendBlock(/*matrix*/,/*x offset*/, /*y offset*/, /*cols*/, /*rows*/, /*Matrix stride*/...)
 					SendBlock(a, 0, y*cy, SIZE, cy, SIZE, dest, FROM_MASTER); // Send the rows of A needed to calculate the area (x*cx, y*cy) - (x*cx +cx, y*cy + cy)
-					SendBlock(b, x*cx, 0, cx, SIZE, SIZE, dest, FROM_MASTER); // Send the coloums of B needed.
+					SendBlock(b, x*cx, 0, cx, SIZE, SIZE, dest, FROM_MASTER); // Send the coloums of B needed. 
 				}
 			}
 		}
@@ -221,6 +217,8 @@ int main(int argc, char **argv)
 		#ifdef DEBUG
 		printf("Node %d done\n", myrank);
 		#endif
+		
+		// Send local results to master
 		SendBlock(c, 0 ,0, cx, cy, cx, 0, FROM_WORKER);
 		
 		
