@@ -1,2 +1,2 @@
 # OpenMP
-A collection of OpenMP Stuff
+A repo with a misleading name, as it actually contains MPI stuff.
